@@ -59,3 +59,19 @@ go build . # build
 # open http://127.0.0.1:4040/
 ```
 
+### 第一個管理帳號
+1. 用參數`-ssusr`啟動伺服器, `test`為臨時登入用的帳號名
+```bash
+./main -ssusr test  # start server with temporary user 'test'
+```
+
+2. 會隨機產生密碼出現類似以下訊息:
+```
+2020/06/09 13:38:08 [warn]enable temporary super user: test NUrcHr#hB+
+```
+
+3. 開啟http://127.0.0.1:4040/admin/
+用`test` / `NUrcHr#hB+`登入後台設定帳號
+下次啟動時不必再加上`-ssusr`參數
+
+
