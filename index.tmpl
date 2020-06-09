@@ -992,7 +992,7 @@ function loadData() {
 			};
 			$('#layer-data').html(tmplFn(opt));
 
-			$('#link-data').html(links2html(data.link)); // links
+			if(data.link) $('#link-data').html(links2html(data.link)); // links
 
 			// basemap
 			var maps = data.map;
@@ -1019,7 +1019,7 @@ function loadData() {
 			$('li[data-layer] input[type="checkbox"]').on('change',toggleLayer);
 
 			// add tabs
-			var tabs = data.tab;
+			var tabs = data.tab || [];
 			for (var i=0; i<tabs.length; i++) {
 				var v = tabs[i];
 				var icon = (v.icon)? ((v.icon.match(/fa\-/))? '<i class="fa '+ v.icon +'"></i>' : v.icon) : '<i class="fa fa-hashtag"></i>';
