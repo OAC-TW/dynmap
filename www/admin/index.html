@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+	
+	<meta charset="utf-8" />
+	<title>簡易圖台後台</title>
+	<meta name="viewport" content="width=device-width">
+	<link href="/res/css/nprogress.css" rel="stylesheet">
+	<script src="/res/nprogress.umd.js" crossorigin=""></script>
+	<link rel="stylesheet" href="/res/quill/quill.snow.css" />
+	<link href="/admin/main.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="nav">
+	<a id="nav" data-perm="0">☰</a>
+	<a href="/admin/" class="layer nav btn auth" data-perm="1">圖層管理</a>
+	<a href="/admin/map/" class="map nav btn auth" data-perm="1">底圖管理</a>
+	<a href="/admin/link/" class="link nav btn auth" data-perm="1">連結管理</a>
+
+	<a href="/admin/tab/" class="tab nav btn auth" data-perm="1">tab管理</a>
+
+	<a href="/admin/attach/" class="attach nav btn auth" data-perm="1">檔案管理</a>
+	<a href="/admin/status/" class="status nav btn auth" data-perm="1">站台狀態</a>
+	<a href="/admin/config/" class="site nav btn auth" data-perm="1">站台設定</a>
+	<a href="/admin/usermanage/" class="usermanage nav btn auth" data-perm="1">使用者管理</a>
+
+	<a href="/admin/user" class="user nav btn auth" data-perm="1">使用者設定</a>
+	<a href="/admin/login" class="login nav btn unauth" data-perm="-1">登入</a>
+	<a href="/admin/logout" class="logout nav btn auth" data-perm="1">登出</a>
+</nav>
+
+<div class="page" data-url="login">
+	<div class="header">
+		<h2>登入</h2>
+	</div>
+	<div class="body" title="表單">
+		<div class="param">
+			<label for="acc">帳號</label>
+			<input type="text" name="acc" />
+		</div>
+		<div class="param">
+			<label for="pwd">密碼</label>
+			<input type="password" name="pwd" />
+		</div>
+	</div>
+	<div class="footer" title="動作"><div class="btn primary" do="login">login</div></div>
+</div>
+
+<div class="page" data-url="user">
+	<div class="header">
+		<h2>編輯帳號資料</h2>
+	</div>
+	<div class="body" title="設定內容">
+		<div class="param">
+			<label for="name">名稱</label>
+			<input type="text" name="name" />
+		</div>
+
+		<div class="param">
+			<label for="pwd">舊密碼</label>
+			<input type="password" name="pwd" />
+		</div>
+
+		<div class="param">
+			<label for="pwd1">新密碼</label>
+			<input type="password" name="pwd1" />
+		</div>
+
+		<div class="param">
+			<label for="pwd2">再次輸入新密碼</label>
+			<input type="password" name="pwd2" />
+		</div>
+	</div>
+	<div class="footer" title="動作"><a href="/admin/" class="cancel btn">Cancel</a><span class="primary btn" do="userSave">Save</span></div>
+</div>
+
+<div class="page" data-url="config">
+	<div class="header">
+		<h2>編輯站台設定</h2>
+	</div>
+	<div class="body">
+		<div class="param">
+			<label for="title">title</label>
+			<input type="text" name="title" />
+		</div>
+
+		<div class="param">
+			<label for="logo">Logo path</label>
+			<input type="text" name="logo" />
+		</div>
+
+		<div class="param">
+			<label for="lang">語系</label>
+			<input type="text" name="lang" placeholder="zh-Hant"/>
+		</div>
+
+		<div class="param">
+			<label for="cstats">計算人次(PageView)</label>
+			<input type="checkbox" name="cstats" value="true"/>
+		</div>
+
+		<div class="param">
+			<label for="stats">顯示人次(PageView)</label>
+			<input type="checkbox" name="stats" value="true"/>
+		</div>
+
+		<div class="param">
+			<label for="link">顯示連結</label>
+			<input type="checkbox" name="link" value="true"/>
+		</div>
+
+		<div class="param">
+			<label for="load">啟用載入外部檔案功能</label>
+			<input type="checkbox" name="load" value="true"/>
+		</div>
+		<div class="param">
+			<label for="loadfs">載入外部檔案大小(kB)</label>
+			<input type="text" name="loadfs" />
+		</div>
+
+		<div class="textarea">
+			<label for="head">&lt;head&gt;編輯</label>
+			<textarea name="head"></textarea>
+		</div>
+
+		<div class="textarea">
+			<label for="manifest">manifest.json</label>
+			<textarea name="manifest"></textarea>
+		</div>
+	</div>
+	<div class="footer" title="動作"><a href="/admin/" class="cancel btn">Cancel</a><span class="primary btn" do="configSave">Save</span></div>
+</div>
+
+<div class="page" data-url="status">
+	<div class="header">
+		<h2>站台狀態</h2>
+	</div>
+	<div class="body">
+		<div class="param">
+			<label for="pv">當前人次(PageView)</label>
+			<input type="text" name="pv"/>
+		</div>
+
+		<div class="param">
+			<label for="stats">訪客人數(UserVisit)(20分鐘內不重複統計之瀏覽數)</label>
+			<input type="text" name="uv"/>
+		</div>
+	</div>
+</div>
+
+
+<div class="page" data-url="usermanage">
+	<div class="header">
+		<h2>使用者列表</h2>
+	</div>
+	<div class="body">
+		<a href="/admin/usermanage/new" class="primary btn">add user</a>
+		<div class="rTable">
+
+		</div>
+	</div>
+<script type="text/x-dot-template" id="umlist">
+	<div class="rTHR">
+		<span class="rTH">操作</span>
+
+		<span class="rTH">名稱</span>
+
+		<span class="rTH">登入帳號</span>
+
+		<span class="rTH">註解</span>
+
+		<span class="rTH">帳號管理</span>
+
+		<span class="rTH">啟用/凍結</span>
+	</div>
+
+{{ for(var i=0; i<it.length; i++) { }}
+{{ var v = it[i]; }}
+	<div class="rTR">
+		<div class="rTD" data-label="操作"><a href="/admin/usermanage/{{!v.uid}}" class="primary btn">編輯</a> <span class="danger btn" data-id="{{!v.uid}}" do="tagDel">刪除</span></div>
+
+		<div class="rTD" data-label="名稱">{{!v.name}}</div>
+
+		<div class="rTD" data-label="登入帳號">{{!v.acc}}</div>
+
+		<div class="rTD" data-label="註解">{{!v.note}}</div>
+
+		<div class="rTD" data-label="帳號管理">{{= (v.su ? '可':'否') }}</div>
+
+		<div class="rTD" data-label="狀態">{{= (v.fz ? '凍結':'正常') }}</div>
+	</div>
+{{ } }}
+</script>
+</div>
+<div class="page" data-url="usermanage/edit">
+	<div class="header new">
+		<h2>新增使用者</h2>
+	</div>
+	<div class="header edit">
+		<h2>編輯使用者資料</h2>
+	</div>
+	<div class="body" title="設定內容">
+		<div class="param">
+			<label for="acc">登入帳號</label>
+			<input type="text" name="acc" />
+		</div>
+
+		<div class="param">
+			<label for="pwd1">新密碼</label>
+			<input type="password" name="pwd1" />
+		</div>
+
+		<div class="param">
+			<label for="pwd2">再次輸入新密碼</label>
+			<input type="password" name="pwd2" />
+		</div>
+
+		<div class="param">
+			<label for="name">名稱</label>
+			<input type="text" name="name" />
+		</div>
+
+		<div class="param">
+			<label for="note">註解</label>
+			<input type="text" name="note" />
+		</div>
+
+		<div class="param">
+			<label for="su">帳號管理</label>
+			<input type="checkbox" name="su" value="true"/>
+		</div>
+
+		<div class="param">
+			<!--<label for="freeze">啟用</label>
+			<input type="radio" name="freeze" value="false"/>-->
+			<label for="fz">凍結</label>
+			<input type="checkbox" name="fz" value="true"/>
+		</div>
+	</div>
+	<div class="footer" title="動作"><a href="./" class="cancel btn">Cancel</a><span class="primary btn" do="usermanageSave">Save</span></div>
+</div>
+
+
+<div class="page" data-url="attach">
+	<div class="header">
+		<h2>檔案列表</h2>
+	</div>
+	<div class="body">
+		<a href="/admin/attach/new" class="primary btn">upload file</a>
+		<div class="rTable">
+		</div>
+	</div>
+
+<script type="text/x-dot-template" id="attachlist">
+	<div class="rTHR">
+		<span class="rTH">操作</span>
+
+		<span class="rTH">檔名</span>
+
+		<span class="rTH">檔案代碼</span>
+
+		<span class="rTH">大小</span>
+
+		<span class="rTH">上傳者</span>
+
+		<span class="rTH">上傳時間</span>
+
+		<span class="rTH">sha256</span>
+	</div>
+
+{{ for(var i=0; i<it.length; i++) { }}
+{{ var v = it[i]; }}
+	<div class="rTR">
+		<div class="rTD" data-label="操作"><a href="/dl/{{!v.token}}" download="{{!v.on}}" target="_blank" class="primary btn">下載</a> <span class="danger btn" data-id="{{!v.token}}" do="attachDel">刪除</span></div>
+
+		<div class="rTD" data-label="檔名">{{!v.on}}</div>
+
+		<div class="rTD" data-label="檔案代碼">{{!v.token}}</div>
+
+		<div class="rTD" data-label="大小">{{!byte2Size(v.sz)}}</div>
+
+		<div class="rTD" data-label="上傳者" data-lookup="uid">{{!v.uid}}</div><!-- TODO: uid to user name -->
+
+		<div class="rTD" data-label="上傳時間">{{!utc2localStr(v.time)}}</div>
+
+		<div class="rTD" data-label="sha256">{{!v.hash}}</div>
+	</div>
+{{ } }}
+</script>
+</div>
+<div class="page" data-url="attach/edit">
+	<div class="header">
+		<h2>檔案上傳</h2>
+	</div>
+	<div class="body" title="設定內容">
+		<div class="dropper">
+			<div class="dropper-msg rTable">Drop files here or click to upload.</div>
+		</div>
+		<input class="hide" type="file" name="attach" multiple="multiple" />
+	</div>
+	<div class="footer" title="動作"><a href="./" class="cancel btn">Cancel</a><span class="primary btn" do="attachUpload">Upload</span></div>
+</div>
+
+<div class="page" data-url="layer">
+	<div class="header">
+		<h2>圖層列表</h2>
+	</div>
+	<div class="body"><!-- TODO: drag to change order -->
+		<a href="/admin/layer/new" class="order-hide primary btn">新增圖層</a>
+		<span class="order-hide cancel btn" do="layerOrder">編輯排序</span>
+		<span class="order-show primary btn" do="layerOrderSave">保存排序</span>
+		<span class="order-show danger btn" do="layerOrderCancel">取消排序</span>
+		<div class="rTable">
+		</div>
+	</div>
+
+<script type="text/x-dot-template" id="layerlist">
+	<div class="rTHR">
+		<span class="rTH">操作</span>
+
+		<span class="rTH">名稱</span>
+
+		<span class="rTH">註解</span>
+
+		<span class="rTH">版權宣告</span>
+
+		<span class="rTH">圖例</span>
+
+		<span class="rTH">預設</span>
+
+		<span class="rTH">狀態</span>
+	</div>
+
+{{ for(var i=0; i<it.length; i++) { }}
+{{ var v = it[i]; }}
+	<div class="rTR" data-order="{{!v.lyid}}">
+		<div class="rTD" data-label="操作">
+			<a href="/admin/layer/{{!v.lyid}}" class="order-hide primary btn">編輯</a>
+			<span class="order-hide danger btn" data-id="{{!v.lyid}}" do="layerDel">刪除</span>
+			<span class="order-show cancel btn" data-id="{{!v.lyid}}" do="layerOrderUp">上移</span>
+			<span class="order-show cancel btn" data-id="{{!v.lyid}}" do="layerOrderDown">下移</span>
+		</div>
+
+		<div class="rTD" data-label="名稱">{{!v.name}}</div>
+
+		<div class="rTD" data-label="註解">{{!v.note}}</div>
+
+		<div class="rTD" data-label="版權宣告(Attribution)">{{!v.attr}}</div>
+
+		<div class="rTD" data-label="圖例">{{=mksvg(v.color, v.fillcolor, v.opacity, 32)}}</div>
+
+		<div class="rTD" data-label="預設">{{= (v.show ? '開啟':'不顯示') }}</div>
+
+		<div class="rTD" data-label="狀態">{{= (v.hide ? '隱藏':'顯示') }}</div>
+	</div>
+{{ } }}
+</script>
+</div>
+<div class="page" data-url="layer/edit">
+	<div class="header new">
+		<h2>新增圖層</h2>
+	</div>
+	<div class="header edit">
+		<h2>編輯圖層</h2>
+	</div>
+	<div class="body" title="設定內容">
+		<div class="param">
+			<label for="name">名稱</label>
+			<input type="text" name="name" />
+		</div>
+		<div class="param">
+			<label for="note">註解</label>
+			<input type="text" name="note" />
+		</div>
+		<div class="param">
+			<label for="attr">版權宣告(Attribution)</label>
+			<input type="text" name="attr" />
+		</div>
+		<div class="param">
+			<label for="token">圖層檔案代碼</label>
+			<input type="text" name="token" input-ext="token" />
+		</div>
+		<div class="param">
+			<label for="uv">向量圖資(eg:風向、海流)</label>
+			<input type="checkbox" name="uv" value="true"/>
+		</div>
+		<div class="param">
+			<label>圖例</label>
+			<span class="legend"></span>
+		</div>
+		<div class="param">
+			<label for="fillcolor">填充顏色</label>
+			<input type="color" name="fillcolor" input-ext="color" />
+		</div>
+		<div class="param">
+			<label for="color">外框顏色</label>
+			<input type="color" name="color" input-ext="color" />
+		</div>
+		<div class="param">
+			<label for="color">透明度</label>
+			<div class="slider">
+				<input class="slider value" type="number" value-bind="opacity" />
+				<input class="slider" type="range" min="0" max="1" step="0.01" name="opacity" input-ext="opacity" />
+			</div>
+		</div>
+		<div class="param">
+			<label for="show">自動開啟</label>
+			<input type="checkbox" name="show" value="true"/>
+		</div>
+		<div class="param">
+			<label for="hide">隱藏</label>
+			<input type="checkbox" name="hide" value="true"/>
+		</div>
+	</div>
+	<div class="footer" title="動作"><a href="./" class="cancel btn">Cancel</a><span class="primary btn" do="layerSave">Save</span></div>
+</div>
+
+<div class="page" data-url="map">
+	<div class="header">
+		<h2>底圖列表</h2>
+	</div>
+	<div class="body"><!-- TODO: drag to change order -->
+		<a href="/admin/map/new" class="order-hide primary btn">新增底圖</a>
+		<span class="order-hide cancel btn" do="mapOrder">編輯排序</span>
+		<span class="order-show primary btn" do="mapOrderSave">保存排序</span>
+		<span class="order-show danger btn" do="mapOrderCancel">取消排序</span>
+		<div class="rTable">
+		</div>
+	</div>
+
+<script type="text/x-dot-template" id="maplist">
+	<div class="rTHR">
+		<span class="rTH">操作</span>
+
+		<span class="rTH">名稱</span>
+
+		<span class="rTH">註解</span>
+
+		<span class="rTH">版權宣告</span>
+
+		<span class="rTH">位址</span>
+
+		<span class="rTH">狀態</span>
+	</div>
+
+{{ for(var i=0; i<it.length; i++) { }}
+{{ var v = it[i]; }}
+	<div class="rTR" data-order="{{!v.mid}}">
+		<div class="rTD" data-label="操作">
+			<a href="/admin/map/{{!v.mid}}" class="order-hide primary btn">編輯</a>
+			<span class="order-hide danger btn" data-id="{{!v.mid}}" do="mapDel">刪除</span>
+			<span class="order-show cancel btn" data-id="{{!v.mid}}" do="mapOrderUp">上移</span>
+			<span class="order-show cancel btn" data-id="{{!v.mid}}" do="mapOrderDown">下移</span>
+		</div>
+
+		<div class="rTD" data-label="名稱">{{!v.name}}</div>
+
+		<div class="rTD" data-label="註解">{{!v.note}}</div>
+
+		<div class="rTD" data-label="版權宣告(Attribution)">{{!v.attr}}</div>
+
+		<div class="rTD" data-label="位址">{{!v.url}}</div>
+
+		<div class="rTD" data-label="狀態">{{= (v.hide ? '隱藏':'顯示') }}</div>
+	</div>
+{{ } }}
+</script>
+</div>
+<div class="page" data-url="map/edit">
+	<div class="header new">
+		<h2>新增底圖</h2>
+	</div>
+	<div class="header edit">
+		<h2>編輯底圖</h2>
+	</div>
+	<div class="body" title="設定內容">
+		<div class="param">
+			<label for="name">名稱</label>
+			<input type="text" name="name" />
+		</div>
+		<div class="param">
+			<label for="note">註解</label>
+			<input type="text" name="note" />
+		</div>
+		<div class="param">
+			<label for="attr">版權宣告(Attribution)</label>
+			<input type="text" name="attr" />
+		</div>
+		<div class="param">
+			<label for="url">位址</label>
+			<input type="text" name="url" />
+		</div>
+		<div class="param">
+			<label for="subdomains">分流SubDomains</label>
+			<input type="text" name="subdomains" />
+		</div>
+		<div class="param">
+			<label for="errorTileUrl">載入失敗之代替圖</label>
+			<input type="text" name="errorTileUrl" />
+		</div>
+		<div class="param">
+			<label for="color">最大縮放層級(包含) (0~18)</label>
+			<input type="number" name="maxZoom"/>
+		</div>
+		<div class="param">
+			<label for="hide">隱藏</label>
+			<input type="checkbox" name="hide" value="true"/>
+		</div>
+	</div>
+	<div class="footer" title="動作"><a href="./" class="cancel btn">Cancel</a><span class="primary btn" do="mapSave">Save</span></div>
+</div>
+
+<div class="page" data-url="link">
+	<div class="header">
+		<h2>連結列表</h2>
+	</div>
+	<div class="body"><!-- TODO: drag to change order -->
+		<a href="/admin/link/new" class="order-hide primary btn">新增連結</a>
+		<span class="order-hide cancel btn" do="linkOrder">編輯排序</span>
+		<span class="order-show primary btn" do="linkOrderSave">保存排序</span>
+		<span class="order-show danger btn" do="linkOrderCancel">取消排序</span>
+		<div class="rTable">
+		</div>
+	</div>
+
+<script type="text/x-dot-template" id="linklist">
+	<div class="rTHR">
+		<span class="rTH">操作</span>
+
+		<span class="rTH">層級</span>
+
+		<span class="rTH">名稱</span>
+
+		<span class="rTH">提示</span>
+
+		<span class="rTH">註解</span>
+
+		<span class="rTH">網址</span>
+
+		<span class="rTH">狀態</span>
+	</div>
+
+{{ for(var i=0; i<it.length; i++) { }}
+{{ var v = it[i]; }}
+{{ var lv = (v.indent)? v.indent : '0'; }}
+	<div class="rTR" data-order="{{!v.lkid}}" data-indent="{{!lv}}">
+		<div class="rTD" data-label="操作">
+			<a href="/admin/link/{{!v.lkid}}" class="order-hide primary btn">編輯</a>
+			<span class="order-hide danger btn" data-id="{{!v.lkid}}" do="linkDel">刪除</span>
+			<span class="order-show cancel btn" data-id="{{!v.lkid}}" do="linkOrderUp">上移</span>
+			<span class="order-show cancel btn" data-id="{{!v.lkid}}" do="linkOrderDown">下移</span>
+			<span class="order-show cancel btn" data-id="{{!v.lkid}}" do="linkOrderIndentP">增加層級</span>
+			<span class="order-show cancel btn" data-id="{{!v.lkid}}" do="linkOrderIndentM">減少層級</span>
+		</div>
+
+		<div class="rTD" data-label="層級" data-val="indent">{{!lv}}</div>
+
+		<div class="rTD" data-label="名稱">{{!v.name}}</div>
+
+		<div class="rTD" data-label="提示">{{!v.title}}</div>
+
+		<div class="rTD" data-label="註解">{{!v.note}}</div>
+
+		<div class="rTD" data-label="網址">{{!v.url}}</div>
+
+		<div class="rTD" data-label="狀態">{{= (v.hide ? '隱藏':'顯示') }}</div>
+	</div>
+{{ } }}
+</script>
+</div>
+<div class="page" data-url="link/edit">
+	<div class="header new">
+		<h2>新增連結</h2>
+	</div>
+	<div class="header edit">
+		<h2>編輯連結</h2>
+	</div>
+	<div class="body" title="設定內容">
+		<div class="param">
+			<label for="name">名稱</label>
+			<input type="text" name="name" />
+		</div>
+		<div class="param">
+			<label for="note">註解</label>
+			<input type="text" name="note" />
+		</div>
+		<div class="param">
+			<label for="title">連結提示</label>
+			<input type="text" name="title" />
+		</div>
+		<div class="param">
+			<label for="url">連結URL</label>
+			<input type="text" name="url" />
+		</div>
+		<div class="param">
+			<label for="hide">隱藏</label>
+			<input type="checkbox" name="hide" value="true"/>
+		</div>
+	</div>
+	<div class="footer" title="動作"><a href="./" class="cancel btn">Cancel</a><span class="primary btn" do="linkSave">Save</span></div>
+</div>
+
+<div class="page" data-url="tab">
+	<div class="header">
+		<h2>tab列表</h2>
+	</div>
+	<div class="body"><!-- TODO: drag to change order -->
+		<a href="/admin/tab/new" class="order-hide primary btn">新增tab</a>
+		<span class="order-hide cancel btn" do="tabOrder">編輯排序</span>
+		<span class="order-show primary btn" do="tabOrderSave">保存排序</span>
+		<span class="order-show danger btn" do="tabOrderCancel">取消排序</span>
+		<div class="rTable">
+		</div>
+	</div>
+
+<script type="text/x-dot-template" id="tablist">
+	<div class="rTHR">
+		<span class="rTH">操作</span>
+
+		<span class="rTH">標題</span>
+
+		<span class="rTH">註解</span>
+
+		<span class="rTH">圖示</span>
+
+		<span class="rTH">狀態</span>
+	</div>
+
+{{ for(var i=0; i<it.length; i++) { }}
+{{ var v = it[i]; }}
+	<div class="rTR" data-order="{{!v.tbid}}">
+		<div class="rTD" data-label="操作">
+			<a href="/admin/tab/{{!v.tbid}}" class="order-hide primary btn">編輯</a>
+			<span class="order-hide danger btn" data-id="{{!v.tbid}}" do="tabDel">刪除</span>
+			<span class="order-show cancel btn" data-id="{{!v.tbid}}" do="tabOrderUp">上移</span>
+			<span class="order-show cancel btn" data-id="{{!v.tbid}}" do="tabOrderDown">下移</span>
+		</div>
+
+		<div class="rTD" data-label="標題">{{!v.title}}</div>
+
+		<div class="rTD" data-label="註解">{{!v.note}}</div>
+
+		<div class="rTD" data-label="圖例">{{!v.icon}}</div>
+
+		<div class="rTD" data-label="狀態">{{= (v.show ? '顯示':'隱藏') }}</div>
+	</div>
+{{ } }}
+</script>
+</div>
+<div class="page" data-url="tab/edit">
+	<div class="header new">
+		<h2>新增tab</h2>
+	</div>
+	<div class="header edit">
+		<h2>編輯tab</h2>
+	</div>
+	<div class="body" title="設定內容">
+		<div class="param">
+			<label for="title">標題</label>
+			<input type="text" name="title" />
+		</div>
+		<div class="param">
+			<label for="show">顯示</label>
+			<input type="checkbox" name="show" value="true"/>
+		</div>
+		<div class="param">
+			<label for="note">註解</label>
+			<input type="text" name="note" />
+		</div>
+		<div class="param">
+			<label for="icon">圖示</label>
+			<input type="text" name="icon" input-ext="icon" />
+		</div>
+		<div class="param">
+			<label for="cicon">關閉圖示</label>
+			<input type="text" name="cicon" input-ext="icon" />
+		</div>
+		<div class="quill-container">
+			<div class="quill-editor"></div>
+		</div>
+	</div>
+	<div class="footer" title="動作"><a href="./" class="cancel btn">Cancel</a><span class="primary btn" do="tabSave">Save</span></div>
+</div>
+
+
+<script type="text/x-dot-template" id="dropper-file">
+{{? it && it.length }}
+
+	<div class="rTHR">
+		<span class="rTH">檔名</span>
+		<span class="rTH">大小</span>
+	</div>
+{{ for(var i=0; i<it.length; i++) { }}
+{{ var v = it[i]; }}
+	<div class="rTR dropper-file">
+		<div class="rTD" data-label="檔名">{{!v.name}}</div>
+		<div class="rTD" data-label="大小">{{!byte2Size(v.size)}}</div>
+	</div>
+{{ } }}
+{{??}}
+Drop files here or click to upload.
+{{?}}
+</script>
+
+<script src="/res/doT.min.js" integrity="sha256-0Mj4wysSsxKrjqVsgnOgOeRZbPreFi/T3+zb+cyR7Jw=" crossorigin="anonymous"></script>
+<script src="/res/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script src="/res/quill/quill.min.js" crossorigin=""></script>
+<script src="/admin/page.min.js" integrity="sha256-jsTfILjWtwmc5CQkK79KFmJs7NPBHUyliEenUdC5k+c=" crossorigin="anonymous"></script>
+<script src="/admin/main.js" crossorigin=""></script>
+</body>
+</html>
+

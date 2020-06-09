@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="[[if gt (len .Lang) 0 ]][[.Lang]][[else]]zh-Hant[[end]]">
+<head>
+	
+	<meta charset="utf-8" />
+	<title>[[.SiteTitle]]</title>
+	<meta name="viewport" content="width=device-width">
+
+<style>
+html, body {
+height: 100%;
+margin: 0;
+}
+#map {
+width: 100%;
+height: 100%;
+background:#212121;
+}
+.pane-rm {
+cursor: pointer;
+width: 100%;
+bottom: 0;
+font-size: 1.5rem;
+color: #fff;
+background-color: #ff0000;
+text-align: center;
+margin: .3em 0;
+}
+.pane-tp {
+cursor: pointer;
+width: 100%;
+bottom: 0;
+font-size: 1.5rem;
+color: #fff;
+background-color: #049cb1;
+text-align: center;
+margin: .3em 0;
+}
+
+.rule-body {
+font-size: 1.3em;
+}
+.contact, .otherlinks {
+font-size: 2em;
+}
+
+.leaflet-sidebar-tabs > ul > li > a.newtab {
+background-color: #dc1e1eb3;
+}
+
+#layers li {
+list-style-type: none;
+display: flex;
+justify-content: space-between;
+position: relative;
+}
+i.fa.icon {
+font-weight: bolder;
+}
+
+.pageview {
+font-size: 2em;
+background-color: rgba(255,255,255,0.6);
+}
+.pageview > span {
+color: #0062de;
+}
+.legend {
+	width: calc(25% + 16px);
+}
+div.slider {
+	display: flex;
+}
+input.slider.value {
+	width: 30%;
+}
+input.slider[type="range"] {
+	width: 90%;
+}
+.hide {
+	display: none;
+}
+.layer-config-btn {
+color: #73687d;
+width: 2rem;
+text-align: center;
+margin: auto 0 0 0;
+}
+.layer-config {
+display: block;
+position: absolute;
+background: #fff;
+z-index: 100;
+padding: 1rem;
+border: 1px solid #888;
+border-radius: .5rem;
+top: 100%;
+}
+.hide.layer-config {
+display: none;
+}
+.param {
+display: flex;
+justify-content: space-between;
+font-size: 1rem;
+}
+
+.modal > .content > .header > h2 {
+	margin: .3em;
+	color: #f7f7f7;
+}
+.modal {
+	display: none;
+	position: fixed;
+	z-index: 3000;
+	left: 0;
+	top: 5vh;
+	width: 100%;
+	max-height: 90vh;
+	overflow: auto;
+	/*background-color: rgb(0,0,0);
+	background-color: rgba(0,0,0,0.1);*/
+}
+
+.modal > .content {
+	background-color: #fff;
+	/*background-color: rgba(255,255,255,0.75);*/
+	margin: 0vh auto;
+	border: 1px solid #888;
+	width: 60%;
+	/*max-height: 75vh;*/
+	border-radius: .8rem;
+}
+.modal > .content > .header {
+	padding: .5em 1.2em;
+	background: rgba(36, 46, 167, 0.75);
+	border-top-left-radius: .8rem;
+	border-top-right-radius: .8rem;
+	text-align: center;
+	color: #f7f7f7;
+	font-size: 1.5em;
+}
+.modal > .content > .body {
+	padding: .5em 1.2em;
+	font-size: 1.3em;
+	/*max-height: 70vh;*/
+	overflow: auto;
+}
+.modal > .content > .footer {
+	padding: .5em 1.2em;
+	text-align: center;
+}
+@media only screen and  (max-width: 640px) {
+.modal > .content {
+	width: 95%;
+}
+}
+.btn {
+	border: none;
+	border-radius: 1em;
+	padding: .7em 1em;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: .8em;
+	margin: auto;
+	cursor: pointer;
+	margin: .5em 1em;
+}
+
+.btn.primary {
+	background-color: #4caf50;
+	color: #fff;
+}
+.btn.cancel {
+	background-color: #E0E1E2;
+	color: rgba(0, 0, 0, 0.6);
+}
+.btn.danger {
+	background-color: #DB2828;
+	color: #fff;
+}
+</style>
+<link href="res/css/nprogress.css" rel="stylesheet">
+<script src="res/nprogress.umd.js" crossorigin=""></script>
+<link rel="manifest" href="manifest.json" crossOrigin="use-credentials" >
+[[htmlSafe .HtmlHead]]
+</head>
+<body>
+
+<div id='map'></div>
+
+<div id="sidebar" class="leaflet-sidebar collapsed">
+	<!-- Nav tabs -->
+	<div class="leaflet-sidebar-tabs">
+		<ul role="tablist"> <!-- top aligned tabs -->
+		</ul>
+
+		<ul role="tablist"> <!-- bottom aligned tabs -->
+			[[if .ShowLink]]<li><a href="#link" role="tab"><i class="fa fa-bookmark" aria-hidden="true"></i></a></li>[[end]]
+			[[if .ShowUserLoad]]<li><a href="#ext-input" role="tab"><i class="fa fa-database" aria-hidden="true"></i></a></li>[[end]]
+		</ul>
+	</div>
+
+	<!-- Tab panes -->
+	<div class="leaflet-sidebar-content">
+[[if .ShowLink]]
+		<div class="leaflet-sidebar-pane" id="link">
+			<h1 class="leaflet-sidebar-header">其他連結<div class="leaflet-sidebar-close"><i class="fa fa-bookmark" aria-hidden="true"></i></div></h1>
+			<div class="otherlinks" id="link-data"></div>
+		</div>
+[[end]]
+[[if .ShowUserLoad]]
+		<div class="leaflet-sidebar-pane" id="ext-input">
+			<h1 class="leaflet-sidebar-header">載入外部資料<div class="leaflet-sidebar-close"><i class="fa fa-database" aria-hidden="true"></i></div></h1>
+			<div class="contact" title="載入外部資料">
+				<input class="" type="file" name="attach"/>
+				<div class="param">
+					<label for="name">名稱</label>
+					<input type="text" name="name" />
+				</div>
+				<div class="param">
+					<label>圖例</label>
+					<span class="legend"></span>
+				</div>
+				<div class="param">
+					<label for="fillcolor">填充顏色</label>
+					<input type="color" name="fillcolor" input-ext="color" />
+				</div>
+				<div class="param">
+					<label for="color">外框顏色</label>
+					<input type="color" name="color" input-ext="color" />
+				</div>
+				<div class="param">
+					<label for="color">透明度</label>
+					<div class="slider">
+						<input class="slider value" type="number" value-bind="opacity" value="0.5" />
+						<input class="slider" type="range" min="0" max="1" step="0.01" name="opacity" input-ext="opacity" value="0.5" />
+					</div>
+				</div>
+
+				<div class="pane-tp load-ext-data"><i class="fa fa-folder-open-o" aria-hidden="true"></i>載入</div>
+				<div>註: 檔案不會上傳至伺服器</div>
+			</div>
+		</div>
+[[end]]
+	</div>
+</div>
+<div class="quill-container hide">
+	<div class="quill-editor" id="quill"></div>
+</div>
+
+<div class="modal" data-url="popup/layerconfig">
+	<div class="content">
+	<div class="header">圖層設定</div>
+	<div class="body">
+		<div class="param">
+			<label for="name">名稱</label>
+			<input type="text" name="name" readonly />
+		</div>
+		<hr/>
+		<div class="param">
+			<label>圖例</label>
+			<span class="legend"></span>
+		</div>
+		<div class="param">
+			<label for="fillcolor">填充顏色</label>
+			<input type="color" name="fillcolor" input-ext="color" />
+		</div>
+		<div class="param">
+			<label for="color">外框顏色</label>
+			<input type="color" name="color" input-ext="color" />
+		</div>
+		<div class="param">
+			<label for="color">透明度</label>
+			<div class="slider">
+				<input class="slider" type="range" min="0" max="1" step="0.01" name="opacity" input-ext="opacity" />
+				<input class="slider value" type="number" value-bind="opacity" />
+			</div>
+		</div>
+	</div>
+	<div class="footer">
+		<span class="cancel btn" do="popupCancel">取消</span>
+		<span class="primary btn" do="layConf">確定</span>
+	</div>
+	</div>
+</div>
+
+
+<script type="application/json" id="layertmpl">
+<h3>圖層</h3>
+<ul>
+{{ for(var i=0; i<it.list.length; i++) { }}
+{{ var v = it.list[i]; }}
+	<li data-layer="{{!v.name}}">
+		<label>
+			<input type="checkbox" {{= (v.show ? 'checked':'') }}/>
+			<span class="legend">{{=it.mksvg(v.color, v.fillcolor, v.opacity)}}</span>
+			<span>{{!v.name}}</span>
+		</label>
+		<span class="layer-config-btn"><i class="fa fa-cog fa-2x" aria-hidden="true" title="自訂顏色"></i></span>
+		<div class="hide layer-config">
+			<div class="param">
+				<label for="fillcolor">填充顏色</label>
+				<input type="color" name="fillcolor" input-ext="color" />
+			</div>
+			<div class="param">
+				<label for="color">外框顏色</label>
+				<input type="color" name="color" input-ext="color" />
+			</div>
+			<div class="param">
+				<label for="color">透明度</label>
+				<div class="slider">
+					<input class="slider" type="range" min="0" max="1" step="0.01" name="opacity" input-ext="opacity" />
+					<input class="slider value" type="number" value-bind="opacity" />
+				</div>
+			</div>
+		</div>
+	</li>
+{{ } }}
+</ul>
+<hr/>
+<h3>底圖</h3>
+<ul>
+{{ for(var i=0; i<it.map.length; i++) { }}
+{{ var v = it.map[i]; }}
+	<li data-map="{{!v.name}}">
+		<label>
+			<input type="radio" name="basemap"/>
+			<span>{{!v.name}}</span>
+		</label>
+	</li>
+{{ } }}
+</ul>
+</script>
+<script type="application/json" id="featuretmpl">
+<div>
+{{? it['區域範圍'] }}
+<h3>區域範圍</h3>
+<p>{{!it['區域範圍']}}</p><hr/>
+{{?}}
+
+{{? it['限制活動'] }}
+<h3>限制活動</h3>
+<p>{{!it['限制活動']}}</p><hr/>
+{{?}}
+
+{{? it['需要申請'] }}
+<h3>需要申請</h3>
+<p>{{!it['需要申請']}}</p><hr/>
+{{?}}
+
+{{? it['禁止採捕'] }}
+<h3>禁止採捕</h3>
+<p>{{!it['禁止採捕']}}</p><hr/>
+{{?}}
+
+{{? it['違規罰則'] }}
+<h3>違規罰則</h3>
+<p>{{!it['違規罰則']}}</p><hr/>
+{{?}}
+
+{{? it['公告法令1'] || it['公告法令2'] || it['公告法令3'] }}
+<h3>公告法令</h3>
+{{? it['公告法令1'] }}
+<p><a target="_blank" href="{{!it['公告連結1']}}" >{{!it['公告法令1']}}</a></p>
+{{?}}
+
+{{? it['公告法令2'] }}
+<p><a target="_blank" href="{{!it['公告法令2']}}" >{{!it['公告法令2']}}</a></p>
+{{?}}
+
+{{? it['公告法令3'] }}
+<p><a target="_blank" href="{{!it['公告法令3']}}" >{{!it['公告法令3']}}</a></p>
+{{?}}
+
+{{?}}
+
+<div class="pane-tp"><i class="fa fa-paper-plane-o"></i>移至...</div>
+<div class="pane-rm"><i class="fa fa-times-circle"></i>從儲列移除</div>
+</div>
+</script>
+<script type="application/json" id="sublinktmpl">
+{{? it && it.length }}
+	<ul>
+{{ for(var i=0; i<it.length; i++) { }}
+{{ var v = it[i]; }}
+{{? v.s && v.s.length }}
+	<li>{{!v.name}}{{=it.mksub(v.s)}}</li>
+{{??}}
+{{ var l = (v.url)? 'href="'+encodeURI(v.url)+'"' : '';}}
+	<li><a target="_blank" rel="noopener" {{=l}} title="{{!v.title}}">{{!v.name}}</a></li>
+{{?}}
+{{ } }}
+	</ul>
+{{?}}
+</script>
+<script type="application/json" id="linktmpl">
+{{? it && it.length }}
+	{{=it.mksub(it)}}
+{{?}}
+</script>
+<link href="res/css/font-awesome.min.css?[[.VersionA]]" rel="stylesheet" crossorigin="">
+<link href="res/quill/quill.snow.css?[[.VersionA]]" rel="stylesheet" crossorigin=""/>
+
+<script src="res/doT.min.js?[[.VersionA]]" crossorigin=""></script>
+<script src="res/jquery-3.4.1.min.js?[[.VersionA]]" crossorigin=""></script>
+<script src="res/quill/quill.min.js?[[.VersionA]]" crossorigin=""></script>
+
+<link href="res/leaflet/leaflet.css?[[.VersionA]]" rel="stylesheet" crossorigin=""/>
+<script src="res/leaflet/leaflet.js?[[.VersionA]]" crossorigin=""></script>
+<script src="res/leaflet/leaflet.watermark.js?[[.VersionA]]" crossorigin=""></script>
+<script src="res/leaflet/Leaflet.CheapLayerAt.js?[[.VersionA]]"></script>
+<script src="res/leaflet/Leaflet.AccuratePosition.js?[[.VersionA]]"></script>
+<script src="res/leaflet/togeojson.umd.js?[[.VersionA]]" crossorigin=""></script>
+<script src="res/leaflet/leaflet.filelayer.js?[[.VersionA]]" crossorigin=""></script>
+
+<link rel="stylesheet" href="res/leaflet/MarkerCluster.css?[[.VersionA]]" crossorigin=""/>
+<link rel="stylesheet" href="res/leaflet/MarkerCluster.Default.css?[[.VersionA]]" crossorigin=""/>
+<script src="res/leaflet/leaflet.markercluster.js?[[.VersionA]]" crossorigin=""></script>
+
+<link rel="stylesheet" href="res/leaflet/L.Control.Zoomslider.css?[[.VersionA]]" crossorigin=""/>
+<script src="res/leaflet/L.Control.Zoomslider.js?[[.VersionA]]" crossorigin=""></script>
+
+<link rel="stylesheet" href="res/leaflet/leaflet-sidebar.min.css?[[.VersionA]]" crossorigin=""/>
+<script src="res/leaflet/leaflet-sidebar.min.js?[[.VersionA]]" crossorigin=""></script>
+
+<link rel="stylesheet" href="res/leaflet/leaflet-velocity.css?[[.VersionA]]" />
+<script src="res/leaflet/leaflet-velocity.js?[[.VersionA]]"></script>
+<script type="text/javascript">
+if ("serviceWorker" in navigator) {
+	if (navigator.serviceWorker.controller) {
+		console.log("[PWA] active service worker found, no need to register");
+		navigator.serviceWorker.getRegistration().then(function (reg) {
+			console.log("[PWA] try update service worker");
+			reg.update();
+		});
+	} else {
+		// Register the service worker
+		navigator.serviceWorker.register("sw.js", {
+			scope: "./"
+		})
+		.then(function (reg) {
+			console.log("[PWA] Service worker has been registered for scope: " + reg.scope);
+		});
+		// Load controlled and uncontrolled pages once the worker is active.
+		//navigator.serviceWorker.ready.then(reload);
+	}
+}
+
+$( document ).ajaxStart(function() {
+	nprogress.start();
+});
+$( document ).ajaxStop(function() {
+	nprogress.done();
+});
+
+var qe = $('#quill')
+var quill = new Quill(qe[0], {
+	modules: {
+		toolbar: null,
+		history: {
+			delay: 2000,
+			maxStack: 1,
+			userOnly: true
+		}
+	},
+	theme: 'snow'
+})
+var qdata = qe.find('.ql-editor')
+function parseDelta(str) {
+	quill.setContents(JSON.parse(str))
+	return qdata.html()
+}
+
+	var initPos = {
+		lat: 23.83,
+		lng: 121.2,
+		zoom: 8,
+	}
+
+	var loc = getRequestParm('loc');
+	if(loc) {
+		var p = loc.split(',');
+		initPos.lat = p[0];
+		initPos.lng = p[1];
+		initPos.zoom = p[2];
+	}
+
+	var map = L.map('map', {
+		center: [initPos.lat, initPos.lng],
+		zoom: initPos.zoom,
+		zoomControl: false,
+		attributionControl: true,
+	});
+	//L.control.zoom( {position: 'topright'} ).addTo(map);
+	L.control.zoomslider( {position: 'topright'} ).addTo(map);
+	L.control.scale().addTo(map);
+
+	L.control.watermark({ image: '[[.Logo]]' }).addTo(map); // logo watermark
+
+	map.on('moveend', function (e) {
+		var lat = map.getCenter().lat.toFixed(6);
+		var lng = map.getCenter().lng.toFixed(6);
+		var zoom = map.getZoom();
+		var parms = "loc=" + lat + "," + lng + "," + zoom;
+		history.replaceState(null, document.title, "?" + parms);
+	});
+
+	var __cache = {};
+	var baseMap = {};
+	var shpLst = {};
+
+	var sidebar = L.control.sidebar({
+		autopan: false,       // whether to maintain the centered map point when opening the sidebar
+		closeButton: true,    // whether t add a close button to the panes
+		container: 'sidebar', // the DOM container or #ID of a predefined sidebar container that should be used
+		position: 'right',     // left or right
+	}).addTo(map);
+
+	sidebar.addPanel({
+		id: 'layers',
+		tab: '<i class="fa icon">☰</i>',
+		pane: '<div id="layer-data"><div>',
+		title: '圖層&底圖',
+	});
+
+
+	// gps location
+	var gpsMark, gpsLocating;
+	sidebar.addPanel({
+		id: 'gps',
+		tab: '<i class="fa fa-map-marker"></i>',
+		title: '定位',
+		button: function (e) {
+			console.log(e);
+			if(gpsLocating) return;
+			gpsLocating = true;
+			map.findAccuratePosition({
+				maxWait: 15000, // defaults to 10000
+				desiredAccuracy: 20 // defaults to 20
+			});
+		}
+	});
+	function setGPSMarker(e){
+		var metersPerPixel = function(latitude, zoomLevel) {
+			var earthCircumference = 40075017;
+			var latitudeRadians = latitude * (Math.PI/180);
+			return earthCircumference * Math.cos(latitudeRadians) / Math.pow(2, zoomLevel + 8);
+		};
+
+		var pixelValue = function(latitude, meters, zoomLevel) {
+			return meters / metersPerPixel(latitude, zoomLevel);
+		};
+		var r = pixelValue(e.latlng.lat, e.accuracy, map.getZoom());
+		if(!gpsMark) {
+			gpsMark = L.circleMarker(e.latlng, {radius: r});
+			gpsMark.addTo(map);
+		}else{
+			gpsMark.setLatLng(e.latlng).setRadius(r);
+		}
+		gpsMark.accuracy = e.accuracy;
+	}
+	function onAccuratePositionProgress (e) {
+		console.log('[onAccuratePositionProgress]', e);
+		setGPSMarker(e);
+		map.stop().flyToBounds(e.bounds);
+	}
+	function onAccuratePositionFound (e) {
+		console.log('[onAccuratePositionFound]', e);
+		setGPSMarker(e);
+		map.stop().flyToBounds(e.bounds);
+		gpsLocating = false;
+	}
+	function onAccuratePositionError (e) {
+		console.log('[onAccuratePositionError]', e);
+		gpsLocating = false;
+	}
+	function onZoomend (e) {
+		//console.log('[onZoomend]', e);
+		if(gpsMark) setGPSMarker({latlng: gpsMark.getLatLng(), accuracy: gpsMark.accuracy});
+	}
+	map.on('accuratepositionprogress', onAccuratePositionProgress);
+	map.on('accuratepositionfound', onAccuratePositionFound);
+	map.on('accuratepositionerror', onAccuratePositionError);
+	map.on('zoomend', onZoomend)
+
+	var marker;
+	var tabs = [];
+	var tabsLoc = {};
+	map.on('click', function(e){
+		if(!marker) marker = L.marker(e.latlng).addTo(map);
+		marker.setLatLng(e.latlng)
+
+		var layers = map.getLayersAt(e.containerPoint);
+		if(layers.length == 0) return;
+
+		var open;
+		for(var i=0; i<layers.length; i++) {
+			var feature = layers[i].feature;
+			if (feature && feature.properties) {
+				var pane = layers2sidebar(layers[i]);
+				open = pane.id;
+				if(tabs.indexOf(open) == -1) {
+					tabs.push(open);
+					sidebar.addPanel(pane);
+					$('a[href="#'+ open +'"]').addClass('newtab');
+				}
+				tabsLoc[open] = e.latlng;
+			}
+		}
+		if(open) sidebar.open(open);
+		$('.leaflet-sidebar-content .pane-rm').off('click', paneRm).on('click', paneRm);
+		$('.leaflet-sidebar-content .pane-tp').off('click', paneTp).on('click', paneTp);
+	});
+
+	// move marker when tab open
+	sidebar.on('content', function(e) {
+		var open = e.id;
+		$('a[href="#'+ open +'"]').removeClass('newtab');
+		var latlng = tabsLoc[open];
+		if(!latlng) return;
+		if(!marker) marker = L.marker(latlng).addTo(map);
+		marker.setLatLng(latlng);
+	})
+
+
+	// load layer/map/tab config
+	loadData();
+[[if .CountStats]]
+	var pv = L.control.watermark({ position:'bottomright', image:'', html:' ', className:'pageview' }).addTo(map);
+	loadPV();
+[[end]]
+[[if .ShowUserLoad]]
+	// load ext geodata
+	$('.pane-tp.load-ext-data').on('click', function(e){
+		var el = $('#ext-input');
+		var opts = {};
+		var opt = {
+			color: el.find('input[name="color"]').val(),
+			fillColor: el.find('input[name="fillcolor"]').val(),
+			fillOpacity: el.find('input[name="opacity"]').val(),
+		};
+		if(opt.color) opts.color = opt.color;
+		if(opt.fillColor) opts.fillColor = opt.fillColor;
+		if(opt.fillOpacity) opts.fillOpacity = opt.fillOpacity;
+		var file = el.find('input[name="attach"]')[0].files;
+		if(file.length > 0) file = file[0];
+
+		var markers = L.markerClusterGroup();
+		var p2lFn = function(geoJsonPoint, latlng) {
+			//console.log('[markers]', latlng, geoJsonPoint);
+			var marker = L.marker(latlng)
+			marker.bindPopup(feature2Html(geoJsonPoint.properties), {
+				autoPan: false,
+				maxHeight: 300
+			}) // TODO: format
+			return markers.addLayer(marker)
+		}
+		var fl = L.FileLayer.fileLoader(map, {
+			layerOptions: {style: opts, pointToLayer:p2lFn},
+			addToMap: false, // Add to map after loading (default: true) ?
+			fileSizeLimit: [[if gt .LoadLimit 0 ]][[.LoadLimit]][[else]]20480[[end]], // File size limit in kb (default: 1024) ?
+		});
+		//console.log('[FileLayer]', el, opt, opts, file, fl);
+		fl.on('data:loaded', function (e) {
+			console.log('[FileLayer][data:loaded]', e, this);
+			var lg = L.layerGroup([markers, e.layer])
+			map.addLayer(lg);
+		});
+		fl.on('data:error', function (err) {
+			console.log('[FileLayer][data:error]', err, this);
+		});
+		fl.load(file)
+	})
+[[end]]
+
+function paneRm(e){
+	var open = $(this).parent().parent().attr('id');
+	sidebar.removePanel(open);
+	var idx = tabs.indexOf(open);
+	tabs.splice(idx, 1);
+	delete tabsLoc[last];
+	var last = tabs[tabs.length - 1];
+	last = last || 'layers';
+	sidebar.open(last);
+}
+
+function paneTp(e){
+	var open = $(this).parent().parent().attr('id');
+	var latlng = tabsLoc[open];
+	map.stop().flyTo(latlng);
+}
+
+function feature2Html(prop) {
+	var html = '<div>';
+
+	for(var k in prop){
+		html += '<div><div>' + k + '</div><div>' + prop[k] + '</div></div><hr/>'
+	}
+
+	html += '</div>';
+	return html;
+}
+
+function feature2Html2(prop) {
+	var html = '<div>';
+
+	html += '<h3>' + prop.Name + '</h3>'
+
+	var told = prop.Toldescribe || prop.Toldes_ibe
+	if(told) told = (told.toLowerCase() == 'null')? null: told;
+
+	var desc = prop.description || prop.Description || prop.Descri_ion
+	if(desc) desc = (desc.toLowerCase() == 'null')? null: desc;
+
+	var out = told || desc
+	html += '<div>' + out + '</div>'
+
+	html += '</div>';
+	return html;
+}
+
+function layers2sidebar(lay) {
+	var tmplFn = doT.template($('#featuretmpl').html());
+	var prop = lay.feature.properties;
+	var out = {
+		id: 'vtab-' + lay._leaflet_id,
+		tab: '<i class="fa fa-object-ungroup"></i>',
+//		pane: feature2Html(prop),
+		pane: tmplFn(prop),
+		title: '資料',
+	};
+	if(prop['名稱']) out.title = prop['名稱'];
+	return out;
+}
+
+function links2tree(d, tmplFn) {
+	var tree = [];
+	tree.mksub = tmplFn;
+	tree.lv = 0;
+	var plv = tree;
+	var uplv = [];
+	var up = null;
+	for(var i=0; i<d.length; i++){
+		var it = d[i];
+		if(!it.s) {
+			it.s = [];
+			it.s.mksub = tmplFn;
+			it.p = plv;
+		}
+		if(!up) {
+			up = it;
+			tree.push(it);
+			continue
+		}
+
+		var ii = it.indent || 0;
+		var ui = up.indent || 0;
+		if(ii > ui) {
+			uplv.push(plv)
+			up.s.push(it)
+			plv = up.s
+			plv.lv = uplv.length
+//console.log('[tree]1', it, up, plv, uplv)
+		} else {
+			if(ii == ui) {
+				plv.push(it)
+			}
+			if(ii < ui) {
+				var c = ui - ii;
+				var p = up
+				while(c--){
+					plv = uplv.pop()
+				}
+				plv.push(it)
+//console.log('[tree]2', it, up, plv, uplv)
+			}
+		}
+console.log('[tree]', it, up, plv, uplv)
+
+		up = it;
+	}
+	return tree
+}
+
+function links2html(d) {
+	var rtmplFn = doT.template($('#linktmpl').html());
+	var tmplFn = doT.template($('#sublinktmpl').html());
+	var o = links2tree(d, tmplFn);
+console.log('[links2tree]', d, o)
+	return rtmplFn(o);
+}
+
+function addShp(list, out) {
+	for(var k in list){
+		var it = list[k];
+		var path = it[0];
+		var opt = it[1];
+		var opts = {
+			k: k,
+			importUrl: 'leaflet/shp.js?[[.VersionA]]',
+		};
+		if(opt.color) opts.color = opt.color;
+		if(opt.fillColor) opts.fillColor = opt.fillColor;
+		if(opt.fillOpacity) opts.fillOpacity = opt.fillOpacity;
+
+		var shpfile = new L.Shapefile(path, opts);
+		shpfile.on('add', layerAddRm).on('remove', layerAddRm);
+		out[k] = shpfile;
+	}
+}
+
+function addGeoJSON(list, out) {
+	var wg = {
+		c: 0,
+		Add: function(num) {
+			this.c += num || 1;
+		},
+		Done: function(num) {
+			this.c -= 1;
+			if (this.c == 0) {
+				this.doneFn();
+			}
+		},
+		doneFn: function() {
+			$('li[data-layer] input[type="checkbox"]').each(toggleLayer);
+			L.control.layers(baseMap, shpLst, {
+				//collapsed: false,
+			}).addTo(map);
+
+			$('span.layer-config-btn').on('click', function(e){
+				//console.log("layer config", e, $(this));
+				var el = $(this).parent();
+				var layName = el.attr('data-layer');
+				var lay = shpLst[layName];
+				var opt = lay.options;
+
+				var fillcolorE = el.find('input[name="fillcolor"]')
+				var colorE = el.find('input[name="color"]')
+				var opacityE = el.find('input[name="opacity"]')
+				var opacityVE = el.find('input[value-bind="opacity"]')
+
+				function setE() {
+					opacityE.val(opacityVE.val())
+				}
+				function update() {
+					opacityVE.val(opacityE.val())
+					var html = mksvg(colorE.val(), fillcolorE.val(), opacityE.val(), 24)
+					el.find('.legend').html(html)
+				}
+				function setConf() {
+					if(!lay.options.geojson) return;
+					var fillOpacity = parseFloat(opacityE.val());
+					var fillColor = fillcolorE.val();
+					var color = colorE.val();
+					var opt = {
+						fillColor: fillColor,
+						fillOpacity: fillOpacity,
+						color: color,
+					}
+					lay.options.geojson.setStyle(function(feature) { return opt; }); // update exist
+					L.Util.setOptions(lay, opt) // set for new add
+					console.log("layer set config", lay, opt);
+				}
+
+				var confE = el.find('.layer-config')
+				if (confE.hasClass('hide')) {
+					fillcolorE.off('change').on('change', update).val(opt.fillColor)
+					colorE.off('change').on('change', update).val(opt.color)
+					opacityE.off('change').on('change', update).val(opt.fillOpacity)
+					opacityVE.off('change').on('change', setE).val(opt.fillOpacity)
+
+					update()
+					$('.layer-config').addClass('hide')
+					confE.removeClass('hide')
+				} else {
+					setConf()
+					confE.addClass('hide')
+				}
+			})
+		},
+	};
+	for(var i=0; i<list.length; i++){
+		var it = list[i];
+		var k = it.name;
+		var path = '/dl/' + it.token;
+		var opts = {
+			k: k,
+			show: it.show,
+		};
+		if(it.color) opts.color = it.color;
+		if(it.fillcolor) opts.fillColor = it.fillcolor;
+		if(it.opacity) opts.fillOpacity = it.opacity;
+		if(it.attr) opts.attribution = it.attr;
+
+		if(it.uv) {
+			loadUVJSON(path, k, opts, wg);
+			continue
+		}
+
+		var markers = L.markerClusterGroup();
+		var p2lFn = function(geoJsonPoint, latlng) {
+			var marker = L.marker(latlng)
+			marker.bindPopup(feature2Html2(geoJsonPoint.properties), {
+				autoPan: false,
+				maxHeight: 300
+			}) // TODO: format
+			return markers.addLayer(marker)
+		}
+		opts.pointToLayer = p2lFn
+		var json = new L.geoJSON({
+			features: [],
+		}, opts);
+		opts.geojson = json;
+		var layer = L.layerGroup([markers, json], opts)
+		layer.on('add', layerAddRm).on('remove', layerAddRm);
+		out[k] = layer;
+		loadGeoJSON(path, k, opts, wg);
+	}
+}
+
+function loadGeoJSON(path, name, opts, wg) {
+	if(opts.show) wg.Add(1);
+	$.ajax({
+		method: 'GET',
+		url: path,
+		dataType: 'json',
+		cache: true,
+		success: function(data, textStatus, jqXHR){
+			//console.log("data ready!", path, data);
+			shpLst[name].options.geojson.addData(data);
+			//var geojson = new L.geoJSON(data, opts);
+			//shpLst[name].addLayer(geojson);
+			if(opts.show) wg.Done();
+		},
+		error: function(){
+			if(opts.show) wg.Done();
+		},
+	});
+}
+
+function loadUVJSON(path, name, opts, wg) {
+	if(opts.show) wg.Add(1);
+	$.ajax({
+		method: 'GET',
+		url: path,
+		dataType: 'json',
+		cache: true,
+		success: function(data, textStatus, jqXHR){
+			//console.log("data ready!", path, data);
+			shpLst[name] = L.velocityLayer({
+				displayValues: true,
+				displayOptions: {
+					velocityType: "Global Wind",
+					displayPosition: "bottomleft",
+					displayEmptyString: "No wind data"
+				},
+				angleConvention: "bearingCCW",
+				data: data,
+				reverseY: true,
+				maxVelocity: 35,
+				lineWidth: 2,
+				//colorScale: [opts.fillColor, opts.color],
+				opacity: opts.fillOpacity || 0.97,
+				frameRate: 12,
+			});
+			if(opts.show) wg.Done();
+		},
+		error: function(){
+			if(opts.show) wg.Done();
+		},
+	});
+}
+
+function loadData() {
+	var tmplFn = doT.template($('#layertmpl').html());
+	$.ajax({
+		method: 'GET',
+		url: '/api/info?[[.VersionC]]',
+		dataType: 'json',
+		cache: true,
+		success: function(data, textStatus, jqXHR){
+			console.log("[layer]config data ready!", data);
+			__cache = data;
+
+			// UI: basemap & layer
+			var opt = {
+				list: data.layer,
+				map: data.map,
+				mksvg: mksvg,
+			};
+			$('#layer-data').html(tmplFn(opt));
+
+			$('#link-data').html(links2html(data.link)); // links
+
+			// basemap
+			var maps = data.map;
+			for (var i=0; i<maps.length; i++) {
+				var v = maps[i];
+				var opts = {
+					k: v.name,
+					id: v.name, // v.mid
+				};
+				if(v.subdomains) opts.subdomains = v.subdomains;
+				if(v.errorTileUrl) opts.errorTileUrl = v.errorTileUrl;
+				if(v.maxZoom !== undefined) opts.maxZoom = v.maxZoom;
+				if(v.attr) opts.attribution = v.attr;
+				var bm = L.tileLayer(v.url, opts);
+				bm.on('add', mapAddRm).on('remove', mapAddRm);
+				baseMap[v.name] = bm;
+				if(i == 0) map.addLayer(bm);
+			}
+			$('li[data-map] input[type="radio"]').on('change', toggleMap);
+
+
+			// layer
+			addGeoJSON(data.layer, shpLst);
+			$('li[data-layer] input[type="checkbox"]').on('change',toggleLayer);
+
+			// add tabs
+			var tabs = data.tab;
+			for (var i=0; i<tabs.length; i++) {
+				var v = tabs[i];
+				var icon = (v.icon)? ((v.icon.match(/fa\-/))? '<i class="fa '+ v.icon +'"></i>' : v.icon) : '<i class="fa fa-hashtag"></i>';
+				var pane = {
+					id: 'tab-' + v.tbid,
+					tab: icon,
+					pane: '<div class="ql-editor">' + parseDelta(v.data) + '</div>',
+					position: 'bottom',
+					title: v.title,
+				};
+				if (v.cicon) {
+					var cicon = (v.cicon.match(/fa\-/))? '<i class="fa '+ v.cicon +'"></i>' : v.cicon;
+					pane.title = '<span>' + v.title + '<span class="leaflet-sidebar-close">'+ cicon +'</span></span>';
+					L.Util.setOptions(sidebar, {closeButton:false});
+				}
+				sidebar.addPanel(pane);
+				if (v.cicon) {
+					L.Util.setOptions(sidebar, {closeButton:true});
+				}
+			}
+		}
+	});
+}
+
+function loadPV() {
+	$.ajax({
+		method: 'GET',
+		url: '/api/stats',
+		dataType: 'json',
+		cache: false,
+		success: function(data, textStatus, jqXHR){
+			console.log("[pv]stats data ready!", data);
+[[if .ShowStats]]
+			pv.setHtml('<span>' + data.pv + '</span>人次'); // PV as watermark
+[[end]]
+		}
+	});
+}
+
+
+// for each data
+function layerAddRm(e){
+	//console.log('[layerAddRm]', e);
+	var lay = e.target;
+	var ele = $('li[data-layer="'+ lay.options.k +'"] input[type="checkbox"]');
+	switch(e.type){
+	case 'add':
+		ele.prop("checked", true);
+		break;
+	case 'remove':
+		ele.prop("checked", false);
+		break;
+	}
+}
+
+// for each checkbox
+function toggleLayer(e){
+	//console.log('checkbox', e, this);
+	var ele = $(this);
+	var layName = ele.parent().parent().attr('data-layer');
+	var lay = shpLst[layName];
+	if (ele.is(':checked')) {
+		map.addLayer(lay);
+	}else{
+		map.removeLayer(lay);
+	}
+}
+
+function toggleMap(e){
+	//console.log('checkbox', e, this);
+	var ele = $(this);
+	var mapName = ele.parent().parent().attr('data-map');
+
+	for (var k in baseMap) {
+		map.removeLayer(baseMap[k]);
+	}
+
+	var bm = baseMap[mapName];
+	if (ele.is(':checked')) {
+		map.addLayer(bm);
+	}else{
+		map.removeLayer(bm);
+	}
+}
+
+function mapAddRm(e){
+	//console.log('[mapAddRm]', e);
+	var bm = e.target;
+	var ele = $('li[data-map="'+ bm.options.k +'"] input[type="radio"]');
+	switch(e.type){
+	case 'add':
+		ele.prop("checked", true);
+		break;
+	case 'remove':
+		ele.prop("checked", false);
+		break;
+	}
+}
+
+function mksvg(color, fillColor, fillOpacity, sz) {
+	fillColor = fillColor || color;
+	fillOpacity = fillOpacity || 0.2;
+	sz = sz || 24;
+	return '<svg height="'+sz+'" width="'+sz+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
+	+ '<rect width="'+sz+'" height="'+sz+'" style="stroke:'+color+';fill:'+fillColor+';fill-opacity:'+fillOpacity+';stroke-width:3" />'
+	+ '</svg>';
+}
+
+function getRequestParm(name) {
+	var re = location.search.match('[?&]'+encodeURIComponent(name)+'=([^&]*)');
+	if(re) {
+		return decodeURIComponent(re[1]);
+	}
+	return false;
+}
+
+$('[do="popupCancel"]').on('click', function(e){
+	$('.modal').hide()
+})
+</script>
+
+</body>
+</html>
+
