@@ -47,3 +47,15 @@
 * `sw.js.tmpl` service worker模板
 * `xxx.exe` / `xxx.elf` 伺服器執行檔
 
+----
+
+## 編譯&執行
+
+```bash
+git clone --depth 1 "https://github.com/cs8425/dynmap.git"
+cd dynmap/
+go build . # build
+./main # start server
+# open http://127.0.0.1:4040/
+```
+
