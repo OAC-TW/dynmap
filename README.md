@@ -1,7 +1,10 @@
 # 簡易Web圖台
-透過[Leaflet.js](https://leafletjs.com/)及各種plugin, 由client端繪製並顯示各種圖資
-搭配簡易後台方便更新圖資、連結等等的額外資訊
+透過[Leaflet.js](https://leafletjs.com/)及各種plugin, 由client端繪製並顯示各種圖資;
+
+搭配簡易後台方便更新圖資、連結等等的額外資訊,
+
 達到最小化後端系統需求及相依性
+
 
 ## 當初要求
 * 不使用ArcGIS Server
@@ -71,7 +74,9 @@ go build . # build
 ```
 
 3. 開啟http://127.0.0.1:4040/admin/
+
 用`test` / `NUrcHr#hB+`登入後台設定帳號
+
 下次啟動時不必再加上`-ssusr`參數
 
 
