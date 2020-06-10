@@ -20,6 +20,7 @@
 
 	<a href="/admin/tab/" class="tab nav btn auth" data-perm="1">tab管理</a>
 
+	<a href="/admin/hook/" class="hook nav btn auth" data-perm="1">動態資源管理</a>
 	<a href="/admin/attach/" class="attach nav btn auth" data-perm="1">檔案管理</a>
 	<a href="/admin/status/" class="status nav btn auth" data-perm="1">站台狀態</a>
 	<a href="/admin/config/" class="site nav btn auth" data-perm="1">站台設定</a>
@@ -301,6 +302,103 @@
 	</div>
 	<div class="footer" title="動作"><a href="./" class="cancel btn">Cancel</a><span class="primary btn" do="attachUpload">Upload</span></div>
 </div>
+
+<div class="page" data-url="hook">
+	<div class="header">
+		<h2>動態資源列表</h2>
+	</div>
+	<div class="body">
+		<a href="/admin/hook/new" class="order-hide primary btn">新增動態資源</a>
+		<!--<span class="order-hide cancel btn" do="layerOrder">編輯排序</span>
+		<span class="order-show primary btn" do="layerOrderSave">保存排序</span>
+		<span class="order-show danger btn" do="layerOrderCancel">取消排序</span>-->
+		<div class="rTable">
+		</div>
+	</div>
+
+<script type="text/x-dot-template" id="hooklist">
+	<div class="rTHR">
+		<span class="rTH">操作</span>
+
+		<span class="rTH">名稱</span>
+
+		<span class="rTH">註解</span>
+
+		<span class="rTH">狀態</span>
+
+		<span class="rTH">存取代碼</span>
+
+		<span class="rTH">更新時間</span>
+
+		<span class="rTH">大小</span>
+
+		<span class="rTH">sha256</span>
+	</div>
+
+{{ for(var i=0; i<it.length; i++) { }}
+{{ var v = it[i]; }}
+	<div class="rTR" data-order="{{!v.hid}}">
+		<div class="rTD" data-label="操作">
+			<a href="/admin/hook/{{!v.hid}}" class="order-hide primary btn">編輯</a>
+			<span class="order-hide danger btn" data-id="{{!v.hid}}" do="hookDel">刪除</span>
+			<!--<span class="order-show cancel btn" data-id="{{!v.hid}}" do="hookOrderUp">上移</span>
+			<span class="order-show cancel btn" data-id="{{!v.hid}}" do="hookOrderDown">下移</span>-->
+		</div>
+
+		<div class="rTD" data-label="名稱">{{!v.name}}</div>
+
+		<div class="rTD" data-label="註解">{{!v.note}}</div>
+
+		<div class="rTD" data-label="狀態">{{= (v.disable ? '停用':'啟用') }}</div>
+
+		<div class="rTD" data-label="存取代碼">{{!v.token}}</div>
+
+		<div class="rTD" data-label="更新時間">{{!utc2localStr(v.time)}}</div>
+
+		<div class="rTD" data-label="大小">{{!byte2Size(v.sz)}}</div>
+
+		<div class="rTD" data-label="sha256">{{!v.hash}}</div>
+	</div>
+{{ } }}
+</script>
+</div>
+<div class="page" data-url="hook/edit">
+	<div class="header new">
+		<h2>新增動態資源</h2>
+	</div>
+	<div class="header edit">
+		<h2>編輯動態資源</h2>
+	</div>
+	<div class="body" title="設定內容">
+		<div class="param">
+			<label for="name">名稱</label>
+			<input type="text" name="name" />
+		</div>
+		<div class="param">
+			<label for="note">註解</label>
+			<input type="text" name="note" />
+		</div>
+		<div class="param">
+			<label for="type">資源類型</label>
+			<input type="text" name="type" />
+		</div>
+		<div class="param">
+			<label for="token">存取代碼</label>
+			<input type="text" name="token" input-ext="token" readonly/>
+		</div>
+		<div class="param">
+			<label for="auth">更新代碼</label>
+			<input type="text" name="auth" input-ext="token" readonly/>
+		</div>
+		<div class="param">
+			<label for="disable">停用</label>
+			<input type="checkbox" name="disable" value="true"/>
+		</div>
+	</div>
+	<div class="footer" title="動作"><a href="./" class="cancel btn">Cancel</a><span class="primary btn" do="hookSave">Save</span></div>
+</div>
+
+
 
 <div class="page" data-url="layer">
 	<div class="header">

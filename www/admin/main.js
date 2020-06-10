@@ -780,6 +780,34 @@ attach.upload = function (ctx, next) {
 page('/attach', showPage, attach.list)
 page('/attach/new', attach.upload)
 
+function hook2ajax(ele, isNew) {
+	var ret = {}
+
+	var nameE = ele.find('input[name="name"]')
+	var noteE = ele.find('input[name="note"]')
+	var typeE = ele.find('input[name="type"]')
+	var disableE = ele.find('input[name="disable"]')
+	var data = {
+		name: nameE.val(),
+		note: noteE.val(),
+		type: typeE.val(),
+
+		disable: (disableE.is(':checked')? '1' : ''),
+	}
+
+	if (data.name == '') {
+		ret.err = '請輸入名稱!!'
+		return ret
+	}
+
+	ret.data = data
+	return ret
+}
+var hook = mkUI($("#hooklist").html(), 'hook', hook2ajax)
+page('/hook', showPage, hook.list)
+page('/hook/new', hook.add)
+page('/hook/:id', hook.edit)
+
 page.base('/admin')
 page.exit('*', closeModal)
 page('*', notfound)
@@ -1007,7 +1035,7 @@ console.log('['+op+']edit', ctx)
 					if (ret instanceof Array) {
 						for (var i=0; i<ret.length; i++) {
 							var d = ret[i]
-							var id = d.aid || d.lyid || d.mid || d.anid || d.liid || d.uid
+							var id = d.aid || d.hid || d.lyid || d.mid || d.anid || d.liid || d.uid
 							if (did == id) {
 								setInput(el, d)
 								ret = d
