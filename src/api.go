@@ -48,6 +48,15 @@ type API interface {
 	AddAttach(attach *Attachment) (AttachID, error) // auto set AID & token
 	ListAttach() []*Attachment // return copy & clean up
 
+	// Hook
+	GetHookByToken(token string) *HookConfig // for download
+	GetHookByAuthToken(authToken string) *HookConfig // for data update
+	GetHookByID(hid HookID) *HookConfig
+	DelHookByID(hid HookID) error
+	AddHook(hk *HookConfig) (HookID, error) // auto set HID & token & AuthToken
+	UpdateHook(hk *HookConfig) error
+	ListHook() []*HookConfig // return copy & clean up
+
 	// Layer
 	GetLayerByID(id LayerID) *LayerGroup
 	DelLayerByID(id LayerID) error

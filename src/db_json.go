@@ -26,6 +26,7 @@ type DataStore struct {
 
 	User   *UserStore   `json:"user"`
 	Attach *AttachStore `json:"attach"`
+	Hook   *HookStore `json:"hook"`
 
 	Layer  *LayerStore  `json:"layer"`
 	Map    *MapStore    `json:"map"`
@@ -41,6 +42,7 @@ func NewDataStore() *DataStore {
 
 		User: NewUserStore(),
 		Attach: NewAttachStore(),
+		Hook: NewHookStore(),
 
 		Layer: NewLayerStore(),
 		Map: NewMapStore(),
@@ -283,6 +285,31 @@ func (s *DataStore) ListAttach() []*Attachment {
 	return s.Attach.GetWeb()
 }
 
+// Hook
+func (s *DataStore) GetHookByToken(token string) *HookConfig { // for download
+	return s.Hook.GetByToken(token)
+}
+func (s *DataStore) GetHookByAuthToken(authToken string) *HookConfig { // for data update
+	return s.Hook.GetByAuthToken(authToken)
+}
+func (s *DataStore) GetHookByID(hid HookID) *HookConfig {
+	return s.Hook.GetByID(hid)
+}
+func (s *DataStore) DelHookByID(hid HookID) error {
+	defer s.FlagDirty()
+	return s.Hook.Del(hid)
+}
+func (s *DataStore) AddHook(hk *HookConfig) (HookID, error) { // auto set HID & token & AuthToken
+	defer s.FlagDirty()
+	return s.Hook.Add(hk)
+}
+func (s *DataStore) UpdateHook(hk *HookConfig) error {
+	defer s.FlagDirty()
+	return s.Hook.Set(hk)
+}
+func (s *DataStore) ListHook() []*HookConfig { // return copy & clean up
+	return s.Hook.GetWeb()
+}
 
 // Layer
 func (s *DataStore) GetLayerByID(id LayerID) *LayerGroup {

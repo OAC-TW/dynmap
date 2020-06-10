@@ -58,6 +58,7 @@ func (wb *WebAPI) initHandler() {
 	wb.HandleFunc("/sw.js", ReqGzFn(wb.swjs))
 	wb.HandleFunc("/manifest.json", ReqGzFn(wb.manifest))
 	wb.HandleFunc("/dl/", ReqCacheFn(ReqGzFn(reqG("/dl/", wb.sess, wb.download)), "public, max-age=31536000, immutable"))
+	//wb.HandleFunc("/hook/", ReqCacheFn(ReqGzFn(reqG("/hook/", wb.sess, wb.hookData)), "public, no-cache, max-age=0, must-revalidate"))
 
 	// user
 	wb.HandleFunc("/api/auth", wb.auth)
@@ -72,6 +73,7 @@ func (wb *WebAPI) initHandler() {
 	wb.HandleFunc("/api/tab/", reqAGP("/api/tab/", wb.sess, wb.tab)) // tab
 	wb.HandleFunc("/api/link/", reqAGP("/api/link/", wb.sess, wb.link)) // nesed links
 	wb.HandleFunc("/api/attach/", reqAGP("/api/attach/", wb.sess, wb.attach)) // attach
+	wb.HandleFunc("/api/hook/", reqAGP("/api/hook/", wb.sess, wb.hook)) // hook
 
 	wb.HandleFunc("/api/config/", reqAGP("/api/config/", wb.sess, wb.config)) // config
 	wb.HandleFunc("/api/astats", reqAG("/api/astats", wb.sess, wb.astats))
