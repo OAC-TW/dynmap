@@ -11,7 +11,7 @@
 * 要有後台系統可以動態更新幾乎所有資料、設定
 * 非資訊人員也能像打Word一樣輕鬆編輯
 * 資料量不大(< 100MB), 且資料、設定更新頻率不高
-* **架設環境有很可能是Android平板 + 4G網路**
+* **架設環境很有可能是Android平板 + 4G網路**
 
 ### 因此採用以下設計
 * 由client端繪製圖資
@@ -79,4 +79,20 @@ go build . # build
 
 下次啟動時不必再加上`-ssusr`參數
 
+----
+
+### 動態資料更新
+
+1. 新增任一動態資源
+2. 取得兩個token, `存取代碼`(token)為一般圖層引用之參數, `更新代碼`(AuthToken)為爬蟲等外部動態更新用
+	* 例如: `存取代碼`(token) = `xeNWkSuV7vDTptKLMKvQ`, `更新代碼`(AuthToken) = `89HuRzqCRlRGIrhSifYN`
+	* 測試資料更新
+```bash
+curl -v -X POST --form "file=@README.md" "http://127.0.0.1:8080/api/push/89HuRzqCRlRGIrhSifYN"
+```
+	* 測試資料取得
+```bash
+curl -v "http://127.0.0.1:8080/hook/xeNWkSuV7vDTptKLMKvQ"
+```
+3. 設定爬蟲等外部程式使用`更新代碼`(AuthToken)推送新資料
 
