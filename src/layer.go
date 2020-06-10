@@ -21,6 +21,7 @@ type LayerGroup struct {
 	Opacity float32 `json:"opacity,omitempty"` // opacity ~~100 = 0.1~~
 
 	UV bool `json:"uv,omitempty"` // show as UV layer (wind map ...etc)
+	FlowToken string `json:"uvflow"` // for flow data serve path // TODO: convert @ server side
 
 	//Objs map[ObjID]*LayerObj // for objs
 }

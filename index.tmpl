@@ -895,6 +895,11 @@ function addGeoJSON(list, out) {
 		if(it.attr) opts.attribution = it.attr;
 
 		if(it.uv) {
+			if(it.uvflow) {
+				loadFlowCSV(path, '/dl/' + it.uvflow, k, opts, wg); // TODO: convert @ server side
+				continue
+			}
+
 			loadUVJSON(path, k, opts, wg);
 			continue
 		}
@@ -971,6 +976,185 @@ function loadUVJSON(path, name, opts, wg) {
 			if(opts.show) wg.Done();
 		},
 	});
+}
+
+// TODO: convert @ server side
+function loadFlowCSV(pathDir, pathVal, name, opts, pwg) {
+	if(opts.show) pwg.Add(1);
+console.log("[flow]", pathDir, pathVal, name, opts, shpLst);
+	var grid = [null, null, null]; // dir, magnitude, meta
+	var wg = {
+		c: 0,
+		Add: function(num) {
+			this.c += num || 1;
+		},
+		Done: function(num) {
+			this.c -= 1;
+			if (this.c == 0) {
+				this.doneFn();
+			}
+		},
+		doneFn: function() {
+			if(grid[2] == null || grid[1] == null || grid[0] == null) {
+				if(opts.show) pwg.Done();
+				return;
+			}
+console.time('convert Flow - all')
+			var meta = parseMeta(grid[2])
+			var data = [
+				{
+					"header": {
+						"parameterCategory":  2,
+						"parameterNumber":   2,
+						"scanMode": 0,
+						"nx": meta.ny,
+						"ny": meta.nx,
+						"lo1": meta.lo1,
+						"la1": meta.la1,
+						"lo2": meta.lo2,
+						"la2": meta.la2,
+						"dx": (meta.lo2 - meta.lo1) / (meta.ny-1),
+						"dy": (meta.la1 - meta.la2) / (meta.nx-1),
+					},
+					"data":[]
+				},
+				{
+					"header": {
+						"parameterCategory":  2,
+						"parameterNumber":   3,
+						"scanMode": 0,
+						"nx": meta.ny,
+						"ny": meta.nx,
+						"lo1": meta.lo1,
+						"la1": meta.la1,
+						"lo2": meta.lo2,
+						"la2": meta.la2,
+						"dx": (meta.lo2 - meta.lo1) / (meta.ny-1),
+						"dy": (meta.la1 - meta.la2) / (meta.nx-1),
+					},
+					"data":[]
+				},
+			]
+
+console.time('convert Flow - grid')
+			var d = parseGrid(grid[0])
+			var s = parseGrid(grid[1])
+console.timeEnd('convert Flow - grid')
+console.time('convert Flow - vet')
+			var vet = phaser2vet(d, s)
+console.timeEnd('convert Flow - vet')
+			data[0].data = vet[0]
+			data[1].data = vet[1]
+console.timeEnd('convert Flow - all')
+console.log("data ready!", grid, meta, data, vet);
+
+			shpLst[name] = L.velocityLayer({
+				displayValues: true,
+				displayOptions: {
+					velocityType: "Global Flow",
+					displayPosition: "bottomleft",
+					displayEmptyString: "No Flow data"
+				},
+				data: data,
+				velocityScale: 0.05,
+				reverseY: true,
+				maxVelocity: 35,
+				lineWidth: 2,
+				colorScale: ['#fff'],
+				opacity: opts.fillOpacity || 0.97,
+				frameRate: 12,
+			});
+			if(opts.show) pwg.Done();
+		},
+	};
+
+	wg.Add(2);
+	$.ajax({
+		method: 'GET',
+		url: pathDir,
+		dataType: 'text',
+		cache: true,
+		success: function(data, textStatus, jqXHR){
+			var lines = data.split('\n');
+			var meta = lines.shift();
+			var transform = lines.shift();
+			var colormap = lines.shift();
+			grid[0] = lines;
+			grid[2] = meta;
+			wg.Done();
+		},
+		error: function(){
+			wg.Done();
+		},
+	});
+	$.ajax({
+		method: 'GET',
+		url: pathVal,
+		dataType: 'text',
+		cache: true,
+		success: function(data, textStatus, jqXHR){
+			var lines = data.split('\n');
+			var meta = lines.shift();
+			var transform = lines.shift();
+			var colormap = lines.shift();
+			grid[1] = lines;
+			grid[2] = meta;
+			wg.Done();
+		},
+		error: function(){
+			wg.Done();
+		},
+	});
+
+	function phaser2vet(d, s) {
+		var u = [];
+		var v = [];
+		//var count = 0;
+		const sin = Math.sin;
+		const cos = Math.cos;
+		const deg2rad = Math.PI / 180;
+		const len = (d.length < s.length)? d.length: s.length;
+		for (var i=0; i<len; i++) {
+			const vs = s[i];
+			switch(vs) {
+			case 0:
+			case NaN:
+				u.push(vs)
+				v.push(vs)
+				break
+			default:
+				const vd = d[i] * deg2rad;
+				u.push(-sin(vd) * vs);
+				v.push(-cos(vd) * vs);
+				//u[count] = -sin(vd) * vs
+				//v[count] = -cos(vd) * vs
+			}
+			//count++;
+		}
+		return [u, v];
+	}
+	function parseGrid(strArr) {
+		var out = []
+		for (var j=0; j<strArr.length; j++) {
+			var str = strArr[j].split(',')
+			for (var i=0; i<str.length; i++) {
+				var v = parseFloat(str[i]) || 0.0;
+				out.push(v)
+			}
+		}
+		return out
+	}
+	function parseMeta(str) {
+		var arr = str.split(',')
+		var out = {}
+		out.nx = parseInt(arr[1]) || 0;
+		out.ny = parseInt(arr[0]) || 0;
+		out.lo1 = parseFloat(arr[3]) || 0;
+		out.lo2 = parseFloat(arr[5]) || 0;
+		out.la1 = parseFloat(arr[6]) || 0;
+		out.la2 = parseFloat(arr[4]) || 0;
+		return out
+	}
 }
 
 function loadData() {

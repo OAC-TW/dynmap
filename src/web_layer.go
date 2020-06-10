@@ -62,6 +62,8 @@ func (wb *WebAPI) layer(base string, sd *SessionData, w http.ResponseWriter, r *
 			Token: r.Form.Get("token"),
 			Attribution: r.Form.Get("attr"),
 
+			FlowToken: r.Form.Get("uvflow"), // TODO: convert @ server side
+
 			Name: r.Form.Get("name"),
 			Note: r.Form.Get("note"),
 		}
