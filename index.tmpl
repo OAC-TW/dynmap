@@ -850,7 +850,7 @@ function addGeoJSON(list, out) {
 					el.find('.legend').html(html)
 				}
 				function setConf() {
-					if(!lay.options.geojson) return;
+					if(!lay.options.geojson) return; // not geojson layer, skip
 					var fillOpacity = parseFloat(opacityE.val());
 					var fillColor = fillcolorE.val();
 					var color = colorE.val();
@@ -904,29 +904,30 @@ function addGeoJSON(list, out) {
 			continue
 		}
 
-		var markers = L.markerClusterGroup();
-		var p2lFn = function(geoJsonPoint, latlng) {
-			var marker = L.marker(latlng)
-			marker.bindPopup(feature2Html2(geoJsonPoint.properties), {
-				autoPan: false,
-				maxHeight: 300
-			}) // TODO: format
-			return markers.addLayer(marker)
-		}
-		opts.pointToLayer = p2lFn
-		var json = new L.geoJSON({
-			features: [],
-		}, opts);
-		opts.geojson = json;
-		var layer = L.layerGroup([markers, json], opts)
-		layer.on('add', layerAddRm).on('remove', layerAddRm);
-		out[k] = layer;
-		loadGeoJSON(path, k, opts, wg);
+		out[k] = loadGeoJSON(path, k, opts, wg);
 	}
 }
 
 function loadGeoJSON(path, name, opts, wg) {
 	if(opts.show) wg.Add(1);
+
+	var markers = L.markerClusterGroup();
+	var p2lFn = function(geoJsonPoint, latlng) {
+		var marker = L.marker(latlng)
+		marker.bindPopup(feature2Html2(geoJsonPoint.properties), {
+			autoPan: false,
+			maxHeight: 300
+		}) // TODO: format
+		return markers.addLayer(marker)
+	}
+	opts.pointToLayer = p2lFn
+	var json = new L.geoJSON({
+		features: [],
+	}, opts);
+	opts.geojson = json;
+	var layer = L.layerGroup([markers, json], opts)
+	layer.on('add', layerAddRm).on('remove', layerAddRm);
+
 	$.ajax({
 		method: 'GET',
 		url: path,
@@ -936,13 +937,13 @@ function loadGeoJSON(path, name, opts, wg) {
 			//console.log("data ready!", path, data);
 			shpLst[name].options.geojson.addData(data);
 			//var geojson = new L.geoJSON(data, opts);
-			//shpLst[name].addLayer(geojson);
 			if(opts.show) wg.Done();
 		},
 		error: function(){
 			if(opts.show) wg.Done();
 		},
 	});
+	return layer;
 }
 
 function loadUVJSON(path, name, opts, wg) {
