@@ -47,6 +47,7 @@ type HookConfig struct {
 	Note string `json:"note,omitempty"`
 	Disable bool `json:"disable,omitempty"`
 	RenderType string `json:"type,omitempty"` // geojson, UV json, UV png, UV bin
+	// TODO: limit source IP? only set by another https server bind on different IP/port?
 }
 
 func (s *HookConfig) Clone() *HookConfig {
@@ -102,17 +103,16 @@ func (a *HookConfig) ServeContent(w http.ResponseWriter, r *http.Request, baseDi
 	http.ServeContent(w, r, a.ExtName, a.UpdateTime, fd)
 }
 
-// Token & AuthToken & ID fill by ADD() api
-func NewHookConfig(name string, size int64) *HookConfig {
+// only update info about data
+func (a *HookConfig) SetData(name string, size int64) *HookConfig {
 	now := time.Now()
 //	sname := truncate2Sec(now).Format(time.RFC3339) + "-" + genSaveName()
 	sname := formatTimestamp(now) + "-" + genSaveName()
-	a := &HookConfig{
-		ExtName: filepath.Clean("/" + name)[1:], // remove '../'
-		Size: size,
-		UpdateTime: now,
-		SaveName: sname,
-	}
+
+	a.ExtName = filepath.Clean("/" + name)[1:] // remove '../'
+	a.Size = size
+	a.UpdateTime = now
+	a.SaveName = sname
 	return a
 }
 
@@ -245,7 +245,7 @@ func mkHookToken(lut map[string]*HookConfig) string {
 	return ""
 }
 
-func (s *HookStore) Set(obj *HookConfig) error { // replace by HID, should only change configable value
+func (s *HookStore) SetConfig(obj *HookConfig) error { // replace by HID, should only change config value
 	s.mx.Lock()
 	defer s.mx.Unlock()
 
@@ -260,6 +260,34 @@ func (s *HookStore) Set(obj *HookConfig) error { // replace by HID, should only 
 	obj0.Note = obj.Note
 	obj0.Disable = obj.Disable
 	obj0.RenderType = obj.RenderType
+
+	s.updateSortList()
+
+	return nil
+}
+
+func (s *HookStore) Set(obj *HookConfig) error { // replace by HID, should only change config value
+	s.mx.Lock()
+	defer s.mx.Unlock()
+
+	id := obj.ID
+	if s.list[id] == nil {
+		return ErrNotExist
+	}
+
+	token := obj.Token
+	if s.lut[token] == nil {
+		return ErrNotExist
+	}
+
+	tokenAuth := obj.AuthToken
+	if s.lutA[tokenAuth] == nil {
+		return ErrNotExist
+	}
+
+	s.list[id] = obj
+	s.lut[token] = obj
+	s.lutA[tokenAuth] = obj
 
 	s.updateSortList()
 

@@ -54,6 +54,7 @@ type API interface {
 	GetHookByID(hid HookID) *HookConfig
 	DelHookByID(hid HookID) error
 	AddHook(hk *HookConfig) (HookID, error) // auto set HID & token & AuthToken
+	UpdateHookConfig(hk *HookConfig) error // only update config
 	UpdateHook(hk *HookConfig) error
 	ListHook() []*HookConfig // return copy & clean up
 

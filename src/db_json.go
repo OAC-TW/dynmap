@@ -303,6 +303,10 @@ func (s *DataStore) AddHook(hk *HookConfig) (HookID, error) { // auto set HID & 
 	defer s.FlagDirty()
 	return s.Hook.Add(hk)
 }
+func (s *DataStore) UpdateHookConfig(hk *HookConfig) error { // only update config
+	defer s.FlagDirty()
+	return s.Hook.SetConfig(hk)
+}
 func (s *DataStore) UpdateHook(hk *HookConfig) error {
 	defer s.FlagDirty()
 	return s.Hook.Set(hk)

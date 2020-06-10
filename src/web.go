@@ -58,7 +58,9 @@ func (wb *WebAPI) initHandler() {
 	wb.HandleFunc("/sw.js", ReqGzFn(wb.swjs))
 	wb.HandleFunc("/manifest.json", ReqGzFn(wb.manifest))
 	wb.HandleFunc("/dl/", ReqCacheFn(ReqGzFn(reqG("/dl/", wb.sess, wb.download)), "public, max-age=31536000, immutable"))
-	//wb.HandleFunc("/hook/", ReqCacheFn(ReqGzFn(reqG("/hook/", wb.sess, wb.hookData)), "public, no-cache, max-age=0, must-revalidate"))
+
+	wb.HandleFunc("/hook/", ReqCacheFn(ReqGzFn(reqG("/hook/", wb.sess, wb.hookDL)), "public, no-cache, max-age=0, must-revalidate"))
+	wb.HandleFunc("/api/push/", reqP("/api/push/", wb.sess, wb.hookUpdate)) // data input
 
 	// user
 	wb.HandleFunc("/api/auth", wb.auth)

@@ -283,6 +283,25 @@ func reqG(base string, sess *Session, f SessHandlerFunc) http.HandlerFunc {
 	}
 }
 
+func reqP(base string, sess *Session, f SessHandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "HEAD":
+			return
+		case "OPTIONS":
+			w.Header().Add("Allow", "POST, HEAD, OPTIONS")
+			return
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+
+		case "POST":
+		}
+		sd := getSess(sess, w, r)
+		f(base, sd, w, r)
+	}
+}
+
 func getKey(url string) string {
 	_, b := filepath.Split(url)
 	return b

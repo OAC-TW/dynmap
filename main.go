@@ -50,6 +50,10 @@ func main() {
 		log.Println("[dir]create", "upload", err)
 		return
 	}
+	if err := createDirIfNotExist("./cache"); err != nil { // TODO: not hardcode
+		log.Println("[dir]create", "cache", err)
+		return
+	}
 
 	db := webmap.NewDataStore()
 	err := db.Open(*dbFile)
