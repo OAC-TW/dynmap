@@ -164,7 +164,7 @@ func (wb *WebAPI) hook(base string, sd *SessionData, w http.ResponseWriter, r *h
 					return
 				}
 				hook.ID = HookID(id)
-				err = wb.db.UpdateHook(hook)
+				err = wb.db.UpdateHookConfig(hook)
 			}
 			if err != nil {
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
