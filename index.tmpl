@@ -884,7 +884,7 @@ function addGeoJSON(list, out) {
 	for(var i=0; i<list.length; i++){
 		var it = list[i];
 		var k = it.name;
-		var path = '/dl/' + it.token;
+		var path = ((it.dyn) ? '/hook/':'/dl/') + it.token;
 		var opts = {
 			k: k,
 			show: it.show,
@@ -893,10 +893,15 @@ function addGeoJSON(list, out) {
 		if(it.fillcolor) opts.fillColor = it.fillcolor;
 		if(it.opacity) opts.fillOpacity = it.opacity;
 		if(it.attr) opts.attribution = it.attr;
+		if(it.velocityScale) opts.velocityScale = it.velocityScale;
 
 		if(it.uv) {
 			if(it.uvflow) {
 				loadFlowCSV(path, '/dl/' + it.uvflow, k, opts, wg); // TODO: convert @ server side
+				continue
+			}
+			if(it.dyn) {
+				loadUVJSON2(path, k, opts, wg);
 				continue
 			}
 
@@ -1156,6 +1161,76 @@ console.log("data ready!", grid, meta, data, vet);
 		out.la2 = parseFloat(arr[4]) || 0;
 		return out
 	}
+}
+
+function loadUVJSON2(path, name, opts, wg) {
+	if(opts.show) wg.Add(1);
+	$.ajax({
+		method: 'GET',
+		url: path,
+		dataType: 'json',
+		cache: true,
+		success: function(data, textStatus, jqXHR){
+			//console.log("data ready!", path, data);
+			var uv = [
+				{
+					"header": {
+						"parameterCategory":  2,
+						"parameterNumber":   2,
+						"scanMode": 0,
+						"nx": data.nx,
+						"ny": data.ny,
+						"lo1": data.lo1,
+						"la1": data.la1,
+						"lo2": data.lo2,
+						"la2": data.la2,
+						"dx": (data.lo2 - data.lo1) / (data.nx-1),
+						"dy": (data.la1 - data.la2) / (data.ny-1),
+					},
+					"data":[]
+				},
+				{
+					"header": {
+						"parameterCategory":  2,
+						"parameterNumber":   3,
+						"scanMode": 0,
+						"nx": data.nx,
+						"ny": data.ny,
+						"lo1": data.lo1,
+						"la1": data.la1,
+						"lo2": data.lo2,
+						"la2": data.la2,
+						"dx": (data.lo2 - data.lo1) / (data.nx-1),
+						"dy": (data.la1 - data.la2) / (data.ny-1),
+					},
+					"data":[]
+				},
+			]
+			uv[0].data = data.d['X']
+			uv[1].data = data.d['Y']
+			shpLst[name] = L.velocityLayer({
+				displayValues: true,
+				displayOptions: {
+					velocityType: "Global Wind",
+					displayPosition: "bottomleft",
+					displayEmptyString: "No data"
+				},
+				angleConvention: "bearingCCW",
+				data: uv,
+				reverseY: true,
+				maxVelocity: 35,
+				velocityScale: 0.1,
+				lineWidth: 2,
+				//colorScale: [opts.fillColor, opts.color],
+				opacity: opts.fillOpacity || 0.97,
+				frameRate: 12,
+			});
+			if(opts.show) wg.Done();
+		},
+		error: function(){
+			if(opts.show) wg.Done();
+		},
+	});
 }
 
 function loadData() {

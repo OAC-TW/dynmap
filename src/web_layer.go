@@ -62,8 +62,6 @@ func (wb *WebAPI) layer(base string, sd *SessionData, w http.ResponseWriter, r *
 			Token: r.Form.Get("token"),
 			Attribution: r.Form.Get("attr"),
 
-			FlowToken: r.Form.Get("uvflow"), // TODO: convert @ server side
-
 			Name: r.Form.Get("name"),
 			Note: r.Form.Get("note"),
 		}
@@ -100,6 +98,16 @@ func (wb *WebAPI) layer(base string, sd *SessionData, w http.ResponseWriter, r *
 		o.UV = false
 		if r.Form.Get("uv") == "1" {
 			o.UV = true
+		}
+
+		val, err := strconv.ParseFloat(r.Form.Get("velocityScale"), 32)
+		if err == nil {
+			o.VelScale = float32(val)
+		}
+
+		o.Dynamic = false
+		if r.Form.Get("dyn") == "1" {
+			o.Dynamic = true
 		}
 
 		return o, ""

@@ -417,7 +417,8 @@ function layer2ajax(ele, isNew) {
 	var showE = ele.find('input[name="show"]')
 	var hideE = ele.find('input[name="hide"]')
 	var uvE = ele.find('input[name="uv"]')
-	var uvflowE = ele.find('input[name="uvflow"]')
+	var dynE = ele.find('input[name="dyn"]')
+	var velocityScaleE = ele.find('input[name="velocityScale"]')
 	var data = {
 		name: nameE.val(),
 		note: noteE.val(),
@@ -431,7 +432,9 @@ function layer2ajax(ele, isNew) {
 		hide: (hideE.is(':checked')? '1' : ''),
 
 		uv: (uvE.is(':checked')? '1' : ''),
-		uvflow: uvflowE.val(),
+		velocityScale: velocityScaleE.val(),
+
+		dyn: (dynE.is(':checked')? '1' : ''),
 	}
 
 	if (data.name == '') {

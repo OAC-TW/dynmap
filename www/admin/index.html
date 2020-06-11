@@ -476,16 +476,20 @@
 			<input type="text" name="attr" />
 		</div>
 		<div class="param">
-			<label for="token">圖層檔案代碼</label>
+			<label for="token">圖層檔案代碼/動態資源代碼</label>
 			<input type="text" name="token" input-ext="token" />
+		</div>
+		<div class="param">
+			<label for="dyn">是否為動態資源</label>
+			<input type="checkbox" name="dyn" value="true"/>
 		</div>
 		<div class="param">
 			<label for="uv">向量圖資(eg:風向、海流)</label>
 			<input type="checkbox" name="uv" value="true"/>
 		</div>
 		<div class="param">
-			<label for="uvflow">海流檔案代碼(流速)</label> <!-- TODO: convert @ server side -->
-			<input type="text" name="uvflow" input-ext="token" />
+			<label for="velocityScale">Velocity Scale(向量圖資)</label>
+			<input type="number" name="velocityScale" />
 		</div>
 		<div class="param">
 			<label>圖例</label>

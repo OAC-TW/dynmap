@@ -15,13 +15,15 @@ type LayerGroup struct {
 	Show bool `json:"show,omitempty"` // show when open
 
 	Attribution string `json:"attr,omitempty"`
-	Token string `json:"token"` // for serve path
+	Token string `json:"token"` // for serve path, static '/dl/', dynamic '/hook/'
 	Color string `json:"color,omitempty"` // color '#3388FF'
 	FillColor string `json:"fillcolor,omitempty"` // color '#3388FF'
-	Opacity float32 `json:"opacity,omitempty"` // opacity ~~100 = 0.1~~
+	Opacity float32 `json:"opacity,omitempty"` // opacity
 
 	UV bool `json:"uv,omitempty"` // show as UV layer (wind map ...etc)
-	FlowToken string `json:"uvflow"` // for flow data serve path // TODO: convert @ server side
+	VelScale float32 `json:"velocityScale,omitempty"` // velocityScale
+
+	Dynamic bool `json:"dyn,omitempty"` // for dynamic data
 
 	//Objs map[ObjID]*LayerObj // for objs
 }
