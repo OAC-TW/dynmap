@@ -61,6 +61,7 @@ func (wb *WebAPI) layer(base string, sd *SessionData, w http.ResponseWriter, r *
 		o := &LayerGroup{
 			Token: r.Form.Get("token"),
 			Attribution: r.Form.Get("attr"),
+			ColorScale: r.Form.Get("colorScale"),
 
 			Name: r.Form.Get("name"),
 			Note: r.Form.Get("note"),

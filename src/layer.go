@@ -22,6 +22,7 @@ type LayerGroup struct {
 
 	UV bool `json:"uv,omitempty"` // show as UV layer (wind map ...etc)
 	VelScale float32 `json:"velocityScale,omitempty"` // velocityScale
+	ColorScale string `json:"colorScale,omitempty"` // colorScale
 
 	Dynamic bool `json:"dyn,omitempty"` // for dynamic data
 

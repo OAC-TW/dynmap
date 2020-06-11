@@ -419,6 +419,7 @@ function layer2ajax(ele, isNew) {
 	var uvE = ele.find('input[name="uv"]')
 	var dynE = ele.find('input[name="dyn"]')
 	var velocityScaleE = ele.find('input[name="velocityScale"]')
+	var colorScaleE = ele.find('input[name="colorScale"]')
 	var data = {
 		name: nameE.val(),
 		note: noteE.val(),
@@ -433,6 +434,7 @@ function layer2ajax(ele, isNew) {
 
 		uv: (uvE.is(':checked')? '1' : ''),
 		velocityScale: velocityScaleE.val(),
+		colorScale: colorScaleE.val(),
 
 		dyn: (dynE.is(':checked')? '1' : ''),
 	}

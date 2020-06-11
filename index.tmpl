@@ -894,6 +894,7 @@ function addGeoJSON(list, out) {
 		if(it.opacity) opts.fillOpacity = it.opacity;
 		if(it.attr) opts.attribution = it.attr;
 		if(it.velocityScale) opts.velocityScale = it.velocityScale;
+		if(it.colorScale) opts.colorScale = it.colorScale.split(';');
 
 		if(it.uv) {
 			if(it.uvflow) {
@@ -972,7 +973,7 @@ function loadUVJSON(path, name, opts, wg) {
 				reverseY: true,
 				maxVelocity: 35,
 				lineWidth: 2,
-				//colorScale: [opts.fillColor, opts.color],
+				colorScale: opts.colorScale || null,
 				opacity: opts.fillOpacity || 0.97,
 				frameRate: 12,
 			});
@@ -1221,7 +1222,7 @@ function loadUVJSON2(path, name, opts, wg) {
 				maxVelocity: 35,
 				velocityScale: 0.1,
 				lineWidth: 2,
-				//colorScale: [opts.fillColor, opts.color],
+				colorScale: opts.colorScale || null,
 				opacity: opts.fillOpacity || 0.97,
 				frameRate: 12,
 			});
