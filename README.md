@@ -86,13 +86,10 @@ go build . # build
 1. 新增任一動態資源
 2. 取得兩個token, `存取代碼`(token)為一般圖層引用之參數, `更新代碼`(AuthToken)為爬蟲等外部動態更新用
 	* 例如: `存取代碼`(token) = `xeNWkSuV7vDTptKLMKvQ`, `更新代碼`(AuthToken) = `89HuRzqCRlRGIrhSifYN`
-	* 測試資料更新
+	* 測試資料更新、取得
 ```bash
-curl -v -X POST --form "file=@README.md" "http://127.0.0.1:8080/api/push/89HuRzqCRlRGIrhSifYN"
-```
-	* 測試資料取得
-```bash
-curl -v "http://127.0.0.1:8080/hook/xeNWkSuV7vDTptKLMKvQ"
+curl -v -X POST --form "file=@README.md" "http://127.0.0.1:4040/api/push/89HuRzqCRlRGIrhSifYN" # send README.md
+curl -v "http://127.0.0.1:4040/hook/xeNWkSuV7vDTptKLMKvQ" # get data back
 ```
 3. 設定爬蟲等外部程式使用`更新代碼`(AuthToken)推送新資料
 
