@@ -25,6 +25,7 @@ import (
 	"math"
 
 	"bytes"
+	"crypto/tls"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -150,6 +151,7 @@ func postUrl(url string, fileName string, data io.Reader) ([]byte, error) {
 			Timeout: 5 * time.Second,
 		}).Dial,
 		TLSHandshakeTimeout: 5 * time.Second,
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	var netClient = &http.Client{
