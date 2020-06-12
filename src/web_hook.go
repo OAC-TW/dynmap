@@ -231,6 +231,7 @@ func (wb *WebAPI) hookUpdate(base string, sd *SessionData, w http.ResponseWriter
 	if err != nil {
 		Vln(3, "[web][hook]remove old cached data error", r.RemoteAddr, r.Method, r.URL, r.Referer(), r.UserAgent(), err)
 	}
-	return
+
+	Vln(3, "[web][hook]update data", r.RemoteAddr, r.Method, r.URL, r.Referer(), r.UserAgent())
 }
 
