@@ -191,6 +191,11 @@ func (wb *WebAPI) hookUpdate(base string, sd *SessionData, w http.ResponseWriter
 	r.ParseMultipartForm(CacheFileSizeLimit)
 
 	file, handler, err := r.FormFile("file")
+	if err != nil {
+		Vln(3, "[web][hook]try open uploaded file err", r.RemoteAddr, r.Method, r.URL, r.Referer(), r.UserAgent(), err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 
 	// TODO: check meta
 	// check file magic
