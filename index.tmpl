@@ -1220,7 +1220,7 @@ function loadUVJSON2(path, name, opts, wg) {
 				data: uv,
 				reverseY: true,
 				maxVelocity: 35,
-				velocityScale: 0.1,
+				velocityScale: opts.velocityScale || null,
 				lineWidth: 2,
 				colorScale: opts.colorScale || null,
 				opacity: opts.fillOpacity || 0.97,
