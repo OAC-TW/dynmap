@@ -1,7 +1,8 @@
 var DCACHE = 'dcache-[[.VersionC]]';
 var ACACHE = 'acache-[[.VersionA]]';
 var HOST = [
-	"rocean.gov.tw",
+	self.location.host,
+	"lvh.me",
 	"127.0.0.1",
 ];
 
@@ -26,11 +27,17 @@ var Cached = [
 
 	[ /^\/dl\/.*/, DCACHE],
 	[ /^\/api\/info/, DCACHE, 200],
+	[ /^\/hook\/.*/, DCACHE, -1], // network must fail, then try cache
 ];
 
 // On install, cache some resources.
 self.addEventListener('install', function(evt) {
 	console.log('The service worker is being installed.');
+	evt.waitUntil(caches.open(ACACHE).then(function (cache) {
+		return cache.addAll([
+			'/'
+		]);
+	}));
 });
 
 self.addEventListener('fetch', function(evt) {
@@ -40,7 +47,7 @@ self.addEventListener('fetch', function(evt) {
 function cacheOrNonCached(req) {
 	var url = new URL(req.url);
 	var h = url.host;
-	if(isCacheHost(h)) {
+	if(!isCacheHost(h)) {
 		return fetch(req); // external resource, not cache
 	}
 	var p = url.pathname;
@@ -69,6 +76,14 @@ function cacheOrNonCached(req) {
 // Time limited network request. If the network fails or the response is not served before timeout, the promise is rejected.
 function fromNetwork(cacheName, req, timeout) {
 	return caches.open(cacheName).then(function (cache) {
+		if(timeout < 0) {
+			return new Promise(function (fulfill, reject) {
+				fetch(req).then(function (resp) {
+					fulfill(setCache(cache, req, resp)); // Fulfill in case of success (save cache).
+				}, reject); // Reject also if network fetch rejects.
+			});
+		}
+
 		return new Promise(function (fulfill, reject) {
 			var timeoutId = setTimeout(reject, timeout); // Reject in case of timeout.
 			fetch(req).then(function (resp) {
