@@ -834,6 +834,7 @@ function addGeoJSON(list, out) {
 				var el = $(this).parent();
 				var layName = el.attr('data-layer');
 				var lay = shpLst[layName];
+				if(!lay) return;
 				var opt = lay.options;
 
 				var fillcolorE = el.find('input[name="fillcolor"]')
@@ -1126,6 +1127,10 @@ function toggleLayer(e){
 	var ele = $(this);
 	var layName = ele.parent().parent().attr('data-layer');
 	var lay = shpLst[layName];
+	if(!lay) {
+		ele.prop('checked', false);
+		return
+	}
 	if (ele.is(':checked')) {
 		map.addLayer(lay);
 	}else{
