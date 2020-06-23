@@ -52,7 +52,7 @@ func NewWebAPI(api API) *WebAPI { // http.Handler
 
 func (wb *WebAPI) initHandler() {
 	// public api
-	wb.HandleFunc("/", wb.index)
+	wb.HandleFunc("/", ReqGzFn(wb.index))
 	wb.HandleFunc("/api/info", wb.info)
 	wb.HandleFunc("/api/stats", wb.stats)
 	wb.HandleFunc("/sw.js", ReqGzFn(wb.swjs))
