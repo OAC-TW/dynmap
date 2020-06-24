@@ -20,7 +20,7 @@ type LayerGroup struct {
 	FillColor string `json:"fillcolor,omitempty"` // color '#3388FF'
 	Opacity float32 `json:"opacity,omitempty"` // opacity
 
-	UV bool `json:"uv,omitempty"` // show as UV layer (wind map ...etc)
+	Type string `json:"type,omitempty"` // '' for geoJson, 'uv' for wind map, 'heat' for heatmap
 	VelScale float32 `json:"velocityScale,omitempty"` // velocityScale
 	ColorScale string `json:"colorScale,omitempty"` // colorScale
 

@@ -61,6 +61,8 @@ func (wb *WebAPI) layer(base string, sd *SessionData, w http.ResponseWriter, r *
 		o := &LayerGroup{
 			Token: r.Form.Get("token"),
 			Attribution: r.Form.Get("attr"),
+			Type: r.Form.Get("type"),
+
 			ColorScale: r.Form.Get("colorScale"),
 
 			Name: r.Form.Get("name"),
@@ -94,11 +96,6 @@ func (wb *WebAPI) layer(base string, sd *SessionData, w http.ResponseWriter, r *
 		opac, err := parseOpacity(r.Form.Get("opacity"))
 		if err == nil {
 			o.Opacity = opac
-		}
-
-		o.UV = false
-		if r.Form.Get("uv") == "1" {
-			o.UV = true
 		}
 
 		val, err := strconv.ParseFloat(r.Form.Get("velocityScale"), 32)

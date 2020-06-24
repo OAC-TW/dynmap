@@ -416,7 +416,7 @@ function layer2ajax(ele, isNew) {
 	var opacE = ele.find('input[name="opacity"]')
 	var showE = ele.find('input[name="show"]')
 	var hideE = ele.find('input[name="hide"]')
-	var uvE = ele.find('input[name="uv"]')
+	var typeE = ele.find('select[name="type"]')
 	var dynE = ele.find('input[name="dyn"]')
 	var velocityScaleE = ele.find('input[name="velocityScale"]')
 	var colorScaleE = ele.find('input[name="colorScale"]')
@@ -432,7 +432,7 @@ function layer2ajax(ele, isNew) {
 		show: (showE.is(':checked')? '1' : ''),
 		hide: (hideE.is(':checked')? '1' : ''),
 
-		uv: (uvE.is(':checked')? '1' : ''),
+		type: typeE.val(),
 		velocityScale: velocityScaleE.val(),
 		colorScale: colorScaleE.val(),
 
@@ -909,6 +909,7 @@ function clrInput(el, obj) {
 	el.find('input[type="checkbox"]').prop('checked', false)
 	el.find('input[type="range"]').val('')
 	el.find('input[type="color"]').val('')
+	el.find('select').val('')
 	if (obj && obj.quill) {
 		obj.quill.setText('')
 	}
@@ -929,6 +930,7 @@ function setInput(el, data) {
 			e.val(v)
 		}
 		el.find('[data-name="' + k + '"]').text(v)
+		el.find('select[name="' + k + '"]').val(v)
 	}
 }
 function mkUI(tmplText, op, input2dataFn) {

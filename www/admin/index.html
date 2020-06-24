@@ -484,8 +484,12 @@
 			<input type="checkbox" name="dyn" value="true"/>
 		</div>
 		<div class="param">
-			<label for="uv">向量圖資(eg:風向、海流)</label>
-			<input type="checkbox" name="uv" value="true"/>
+			<label for="type">圖資類型(向量、熱圖)</label>
+			<select class="layer-type" name="type">
+				<option value="" selected>普通</option>
+				<option value="uv">向量 (風場、海流)</option>
+				<option value="heat">熱圖 (溫度、雨量)</option>
+			</select>
 		</div>
 		<div class="param">
 			<label for="velocityScale">Velocity Scale(向量圖資)</label>

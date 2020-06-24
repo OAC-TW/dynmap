@@ -427,6 +427,13 @@ font-size: 1rem;
 
 <link rel="stylesheet" href="res/leaflet/leaflet-velocity.css?[[.VersionA]]" />
 <script src="res/leaflet/leaflet-velocity.js?[[.VersionA]]"></script>
+
+<script src="res/leaflet/webgl-heatmap.js?[[.VersionA]]"></script>
+<script src="res/leaflet/leaflet-webgl-heatmap.min.js?[[.VersionA]]"></script>
+
+<script src="res/leaflet/heatmap.min.js?[[.VersionA]]"></script>
+<script src="res/leaflet/leaflet-heatmap.js?[[.VersionA]]"></script>
+
 <script type="text/javascript">
 if ("serviceWorker" in navigator) {
 	if (navigator.serviceWorker.controller) {
@@ -897,12 +904,17 @@ function addGeoJSON(list, out) {
 		if(it.velocityScale) opts.velocityScale = it.velocityScale;
 		if(it.colorScale) opts.colorScale = it.colorScale.split(';');
 
-		if(it.uv) {
+		switch(it.type) {
+		case 'uv':
 			loadUVJSON(path, k, opts, wg);
-			continue
+			break
+		case 'heat':
+			//loadHeatmapGL(path, k, opts, wg);
+			loadHeatmap(path, k, opts, wg);
+			break
+		default:
+			out[k] = loadGeoJSON(path, k, opts, wg);
 		}
-
-		out[k] = loadGeoJSON(path, k, opts, wg);
 	}
 }
 
@@ -1016,6 +1028,166 @@ function loadUVJSON(path, name, opts, wg) {
 		uv[0].data = data.d['X']
 		uv[1].data = data.d['Y']
 		return uv;
+	}
+}
+
+function loadHeatmapGL(path, name, opts, wg) {
+	if(opts.show) wg.Add(1);
+	var heatmapGL = new L.webGLHeatmap({
+		size: 12000,
+		units: 'm',
+		//alphaRange: 0.4,
+		opacity: opts.fillOpacity || 0.8,
+	});
+	//heatmapGL.addTo(map);
+	shpLst[name] = heatmapGL;
+
+	$.ajax({
+		method: 'GET',
+		url: path,
+		dataType: 'json',
+		cache: true,
+		success: function(data, textStatus, jqXHR){
+			var dataPoints = [];
+			var min = 999;
+			var max = -999;
+			var locs = data.cwbopendata.location;
+			for(var i=0; i<locs.length; i++) {
+				var loc = locs[i]
+				var v = getVal(loc)
+				if(v != 0) {
+					var pt = [
+						parseFloat(loc.lat_wgs84),
+						parseFloat(loc.lon_wgs84),
+						v,
+					]
+
+					dataPoints.push(pt)
+					if(v < min) min = v
+					if(v > max) max = v
+				}
+			}
+
+			var scale = 1.0 / (50 - (-10)) // fixed scale
+			//var scale = 1.0 / (max - min) // normalize
+			for(var i=0; i<dataPoints.length; i++) {
+				dataPoints[i][2] -= min
+			}
+
+			heatmapGL.setData(dataPoints)
+			heatmapGL.multiply(scale)
+
+			console.log("[GL]", data, dataPoints, min, max, scale);
+
+			if(opts.show) wg.Done();
+		},
+		error: function(){
+			if(opts.show) wg.Done();
+		},
+	});
+
+	function getVal(loc) {
+		if (!loc.weatherElement) return 0;
+		var ele = loc.weatherElement;
+		for(var i=0; i<ele.length; i++) {
+			var e = ele[i]
+			switch(e.elementName){
+			case 'TEMP':
+				var v = e.elementValue.value
+				return (v == "-99")? 0 : parseFloat(v);
+			}
+		}
+		return 0;
+	}
+}
+
+function loadHeatmap(path, name, opts, wg) {
+	if(opts.show) wg.Add(1);
+
+	var heatmap = new HeatmapOverlay({
+		// radius should be small ONLY if scaleRadius is true (or small radius is intended)
+		// if scaleRadius is false it will be the constant radius used in pixels
+		"radius": 0.05,
+		"maxOpacity": opts.fillOpacity || 0.8,
+		// scales the radius based on map zoom
+		"scaleRadius": true,
+		// if set to false the heatmap uses the global maximum for colorization
+		// if activated: uses the data maximum within the current map boundaries
+		//   (there will always be a red spot with useLocalExtremas true)
+		"useLocalExtrema": false,
+		// which field name in your data represents the latitude - default "lat"
+		latField: 'lat',
+		// which field name in your data represents the longitude - default "lng"
+		lngField: 'lon',
+		// which field name in your data represents the data value - default "value"
+		valueField: 'v'
+	});
+	//heatmap.addTo(map);
+	shpLst[name] = heatmap;
+
+	$.ajax({
+		method: 'GET',
+		url: path,
+		dataType: 'json',
+		cache: true,
+		success: function(data, textStatus, jqXHR){
+			var dataPoints = [];
+			var min = 999;
+			var max = -999;
+			var locs = data.cwbopendata.location;
+			for(var i=0; i<locs.length; i++) {
+				var loc = locs[i]
+				var v = getVal(loc)
+				if(v != 0) {
+					var pt = {
+						lat: parseFloat(loc.lat_wgs84),
+						lon: parseFloat(loc.lon_wgs84),
+						v: v,
+					}
+					dataPoints.push(pt)
+					if(v < min) min = v
+					if(v > max) max = v
+				}
+			}
+
+			// normalize
+			var scale = 1.0 / (max - min)
+			/*for(var i=0; i<dataPoints.length; i++) {
+				var v = dataPoints[i]['v']
+				v = (v - min) * scale
+				dataPoints[i]['v'] = v
+			}*/
+
+			// fixed scale
+			/*var scale = 1.0 / (50 - (-10))
+			for(var i=0; i<dataPoints.length; i++) {
+				var v = dataPoints[i]['v']
+				v = (v - min) * scale
+				dataPoints[i]['v'] = v
+			}*/
+			heatmap.setData({data: dataPoints, max: 50, min: -10})
+
+			console.log("[heatmap]", data, dataPoints, min, max);
+
+			if(opts.show) wg.Done();
+		},
+		error: function(){
+			if(opts.show) wg.Done();
+		},
+	});
+
+	function getVal(loc) {
+		if (!loc.weatherElement) return 0;
+		var ele = loc.weatherElement;
+		for(var i=0; i<ele.length; i++) {
+			var e = ele[i]
+			switch(e.elementName){
+			case 'TEMP':
+				var v = e.elementValue.value
+				return (v == "-99")? 0 : parseFloat(v);
+			}
+		}
+		return 0;
 	}
 }
 
