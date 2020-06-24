@@ -42,6 +42,7 @@
       this._max = 1;
       this._min = 0;
       this.cfg.container = this._el;
+      this._el.style.pointerEvents = 'none';
     },
 
     onAdd: function (map) {
