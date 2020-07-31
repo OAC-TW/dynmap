@@ -209,6 +209,8 @@ type VectorGrid struct {
 	Time string `json:"time"` // just copy now
 	Desc string `json:"Description"`  // just copy
 
+	DataRange map[string][]jsonFloat `json:"drange"`
+
 	Data map[string][]jsonFloat `json:"d"`
 }
 
@@ -223,6 +225,7 @@ func (value jsonFloat) MarshalJSON() ([]byte, error) {
 func NewVectorGrid() *VectorGrid {
 	vg := &VectorGrid{}
 	vg.Data = make(map[string][]jsonFloat, 2)
+	vg.DataRange = make(map[string][]jsonFloat, 2)
 	return vg
 }
 
@@ -350,6 +353,21 @@ func (ps *procState) FillTag(xs *XmlState, data []byte, grid *VectorGrid) {
 			if v, err := strconv.ParseFloat(string(data), 32); err == nil {
 				arr = append(arr, jsonFloat(v))
 				grid.Data[ps.valName] = arr
+
+				if !math.IsNaN(v) {
+					// minimum and maximum
+					minMax, ok := grid.DataRange[ps.valName]
+					if !ok {
+						minMax = []jsonFloat{jsonFloat(v), jsonFloat(v)}
+						grid.DataRange[ps.valName] = minMax
+					}
+					if v < float64(minMax[0]) {
+						minMax[0] = jsonFloat(v)
+					}
+					if v > float64(minMax[1]) {
+						minMax[1] = jsonFloat(v)
+					}
+				}
 			}
 		case "cwbopendata": // end dataset
 			ps.st = 2
