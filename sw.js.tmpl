@@ -102,7 +102,7 @@ function fromCache(cacheName, req) {
 		return cache.match(req).then(function (matching) {
 //			return matching || Promise.reject('no-match');
 			return matching || fetch(req).then(function (resp) {
-				cache.put(req, resp.clone());
+				if(resp.ok) cache.put(req, resp.clone());
 				return resp;
 			});
 		});
@@ -110,6 +110,7 @@ function fromCache(cacheName, req) {
 }
 
 function setCache(cache, req, resp) {
+	if(!resp.ok) return resp;
 	if (req.url.match(/\/\?.*$/)) {
 		return cache.match('/').then(function (matching) {
 			cache.put('/', resp.clone());
